@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "152346718800",
+    "project_id": "pruebasfirebasetfg",
+    "storage_bucket": "pruebasfirebasetfg.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:152346718800:android:38dbc71311e3e9e2e79755",
+        "android_client_info": {
+          "package_name": "com.example.fase1tfg"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDJAICc1R4x6G-o4-vqEpi9878_DQtsiY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:152346718800:android:1f17769813638ee9e79755",
+        "android_client_info": {
+          "package_name": "com.example.pruebastfg"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDJAICc1R4x6G-o4-vqEpi9878_DQtsiY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
