@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Fase1TFG"
+rootProject.name = "MateSync"
 include(":app")
  

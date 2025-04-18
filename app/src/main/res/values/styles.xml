@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+    </style>
+
+    <style name="DialogTheme" parent="Theme.MaterialComponents.DayNight.Dialog">
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Material3.BodyMedium</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Material3.TitleMedium</item>
+
+        <!-- Personaliza otros atributos si es necesario -->
+    </style>
+</resources>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <group android:checkableBehavior="single">
+
+        <item android:enabled="false"
+            android:title="General">
+            <menu>
+                <item
+                    android:id="@+id/nav_grupoDomesticoHome"
+                    android:icon="@drawable/grupodomestico_logo"
+                    android:title="Grupo Doméstico" />
+
+                <item
+                    android:id="@+id/nav_inicio"
+                    android:title="Inicio"
+                    android:icon="@drawable/inicio_logo"
+                    />
+
+            </menu>
+
+        </item>
+        <item android:enabled="false"
+            android:title="Hogar">
+            <menu>
+                <item
+                    android:id="@+id/nav_tareas"
+                    android:icon="@drawable/tareashogar_logo"
+                    android:title="Tareas" />
+
+                <item
+                    android:id="@+id/nav_finanzas"
+                    android:icon="@drawable/finanzas_logo"
+                    android:title="Finanzas" />
+
+
+            </menu>
+
+        </item>
+        <item android:enabled="false"
+            android:title="Contabilidad">
+            <menu>
+                <item
+                    android:id="@+id/nav_listaCompra"
+                    android:icon="@drawable/listacompra_logo"
+                    android:title="Lista de la compra" />
+
+            </menu>
+
+        </item>
+        <item android:id="@+id/nav_cerrarSesion"
+
+            android:title="Cerrar Sesión"/>
+
+
+
+
+    </group>
+
+
+</menu>

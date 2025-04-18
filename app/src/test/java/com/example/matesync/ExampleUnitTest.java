@@ -1,4 +1,4 @@
-package com.example.fase1tfg;
+package com.example.matesync;
 
 import org.junit.Test;
 

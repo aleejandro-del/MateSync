@@ -1,4 +1,4 @@
-package com.example.fase1tfg;
+package com.example.matesync.AuthActivities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +14,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.matesync.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
