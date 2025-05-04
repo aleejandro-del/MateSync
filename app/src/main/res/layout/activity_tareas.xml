@@ -66,10 +66,10 @@
 
                 <TextView
                     android:id="@+id/tvTareas"
-                    android:layout_width="335dp"
-                    android:layout_height="28dp"
+                    android:layout_width="337dp"
+                    android:layout_height="37dp"
                     android:text="Tareas del hogar de *Grupo Doméstico*"
-                    android:textSize="18sp"
+                    android:textSize="24dp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"

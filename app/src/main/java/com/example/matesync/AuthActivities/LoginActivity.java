@@ -28,7 +28,7 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton, goRegisterButton;
     private TextView goRecoverPassword;
     private boolean estaEnGrupo = false;
-
+    SharedPreferencesManager shared;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.loginButton);
         goRegisterButton = findViewById(R.id.goRegisterButton);
         goRecoverPassword = findViewById(R.id.goRecoverPassword);
-
+        shared = new SharedPreferencesManager(this);
         loginButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -95,7 +95,7 @@ public class LoginActivity extends AppCompatActivity {
                             String userUID = user.getUid(); // UID válido
                             System.out.println("User UID: " + userUID);
 
-                            SharedPreferencesManager shared = new SharedPreferencesManager(LoginActivity.this);
+
                             shared.setLoggedIn(true);
                             shared.setRegistered(true);
                             shared.setUserEmail(email);
@@ -104,17 +104,17 @@ public class LoginActivity extends AppCompatActivity {
                             // Obtener datos adicionales de Firestore
                             conn.getUserBBDDdata(userUID, new ConexionBBDD.FirestoreUserCallback() {
                                 @Override
-                                public void onCallback(String nombreUser, String email, boolean isAdmin, String grupoID) {
+                                public void onCallback(String nombreUser, String email, boolean isAdmin, String grupoID, String nombreGrupo) {
                                     if (nombreUser != null && !nombreUser.isEmpty()) {
                                         shared.setUserName(nombreUser);
                                         shared.setUserGroup(grupoID);
                                         shared.setIsAdmin(isAdmin);
-
+                                        shared.setNombreGrupo(nombreGrupo);
                                         Log.d("LoginFlow", "Datos completos obtenidos:");
                                         Log.d("LoginFlow", "Nombre: " + nombreUser);
                                         Log.d("LoginFlow", "GrupoID: " + grupoID);
                                         Log.d("LoginFlow", "Admin: " + isAdmin);
-
+                                        Log.d("LoginFlow", "nombre de grupo: " + nombreGrupo);
                                         estaEnGrupo = !grupoID.isEmpty();
                                         Toast.makeText(LoginActivity.this, "Login exitoso", Toast.LENGTH_SHORT).show();
 

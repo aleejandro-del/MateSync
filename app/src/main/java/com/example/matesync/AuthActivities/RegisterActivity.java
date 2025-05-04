@@ -24,7 +24,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText etRepeatPassword;
     private Button registerButton;
     private Button registerGoLoginButton;
-
+    SharedPreferencesManager shared ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +35,7 @@ public class RegisterActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        shared = new SharedPreferencesManager(this);
         etNombre = findViewById(R.id.registerNombre);
         etEmail = findViewById(R.id.registerEmail);
         etPassword = findViewById(R.id.registerPassword);
@@ -104,7 +105,7 @@ public class RegisterActivity extends AppCompatActivity {
         auth.registerUser(email, nombre, password, this, new ConexionBBDD.AuthCallback() {
             @Override
             public void onSuccess() {
-                SharedPreferencesManager shared = new SharedPreferencesManager(RegisterActivity.this);
+
                 shared.setRegistered(true);
                 shared.setUserName(nombre);
                 shared.setUserEmail(email);

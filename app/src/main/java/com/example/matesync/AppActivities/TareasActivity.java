@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.service.autofill.SavedDatasetsInfo;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -36,8 +35,6 @@ import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.Modelo.Tarea;
 import com.example.matesync.Modelo.TareaAdapter;
 import com.example.matesync.R;
-import com.google.android.material.textfield.TextInputEditText;
-
 import java.util.List;
 
 public class TareasActivity extends AppCompatActivity implements MenuLateralManager.NavigationListener {
@@ -59,10 +56,8 @@ public class TareasActivity extends AppCompatActivity implements MenuLateralMana
         });
         sharedPreferences = new SharedPreferencesManager(this);
         tvTareas = findViewById(R.id.tvTareas);
-        tvTareas.setText(sharedPreferences.getNombreGrupo());
+        tvTareas.setText("Tareas del hogar de "+sharedPreferences.getNombreGrupo());
         ivCrear = findViewById(R.id.ivCrear);
-
-
 
         cargarTareas();
         crearMenuLateral();
@@ -141,7 +136,6 @@ public class TareasActivity extends AppCompatActivity implements MenuLateralMana
 
 
     // método que crea el diálogo de creación de tarea
-
     private void crearDialogoCreacionTarea() {
 
         View dialogView = LayoutInflater.from(this).inflate(R.layout.layout_dialogo_crear_tarea, null);
@@ -207,11 +201,13 @@ public class TareasActivity extends AppCompatActivity implements MenuLateralMana
 
 
         if (item.getItemId() == R.id.nav_grupoDomesticoHome) {
-            Intent intent = new Intent(TareasActivity.this, RegisterActivity.class);
+            Intent intent = new Intent(TareasActivity.this, GrupoDomHomeActivity.class);
             startActivity(intent);
             finish();
         } else if (item.getItemId() == R.id.nav_tareas) {
-
+            Intent intent = new Intent(TareasActivity.this, TareasActivity.class);
+            startActivity(intent);
+            finish();
         } else if (item.getItemId() == R.id.nav_finanzas) {
 
         } else if (item.getItemId() == R.id.nav_listaCompra) {

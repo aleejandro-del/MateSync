@@ -20,6 +20,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ConexionBBDD {
     private static ConexionBBDD conn;
@@ -39,6 +40,10 @@ public class ConexionBBDD {
         return conn;
     }
 
+    public static FirebaseAuth getAuth() {
+        return auth;
+    }
+
     //método para registrar usuario
     public void registerUser(String email, String nombre, String password, RegisterActivity context, AuthCallback callback) {
         auth.createUserWithEmailAndPassword(email, password)
@@ -48,7 +53,7 @@ public class ConexionBBDD {
                         FirebaseUser user = auth.getCurrentUser();
                         if (user != null) {
 
-                             saveUserDataBBDD(user.getUid(), email, nombre, context, callback);
+                            saveUserDataBBDD(user.getUid(), email, nombre, context, callback);
                         }
                     } else {
                         // Error en el registro
@@ -73,6 +78,7 @@ public class ConexionBBDD {
                 });
     }
 
+
     //método para recuperar datos de la BBDD de un user mediante su UID
     public void getUserBBDDdata(String uid, FirestoreUserCallback callback) {
         DocumentReference doc = db.collection("usuarios").document(uid);
@@ -91,14 +97,28 @@ public class ConexionBBDD {
                     System.out.println(grupoUserID);
                     System.out.println(isAdmin);
                     System.out.println(uid);
-                    callback.onCallback(nombreUser, email, isAdmin, grupoUserID); // Devuelve los datos recogidos de la BBDD usando el callback
+                    // Consulta adicional para obtener el nombre del grupo
+                    DocumentReference grupoDoc = db.collection("gruposDomesticos").document(grupoUserID);
+                    grupoDoc.get().addOnCompleteListener(grupoTask -> {
+                        if (grupoTask.isSuccessful()) {
+                            DocumentSnapshot grupoSnapshot = grupoTask.getResult();
+                            String nombreGrupo = grupoSnapshot.exists() ?
+                                    grupoSnapshot.getString("nombreGrupo") : null;
+
+                            callback.onCallback(nombreUser, email, isAdmin, grupoUserID, nombreGrupo);  // Devuelve los datos recogidos de la BBDD usando el callback
+                        } else {
+                            System.out.println("Error al obtener grupo: " + grupoTask.getException());
+                            callback.onCallback(nombreUser, email, isAdmin, grupoUserID, null);
+                        }
+                    });
+
                 } else {
                     System.out.println("El documento no existe");
-                    callback.onCallback(null, null, false, null); // Devuelve null si el documento no existe
+                    callback.onCallback(null, null, false, null, null); // Devuelve null si el documento no existe
                 }
             } else {
                 System.out.println("Error al obtener el documento: " + task.getException());
-                callback.onCallback(null, null, false, null); // Devuelve null si hay un error
+                callback.onCallback(null, null, false, null, null); // Devuelve null si hay un error
             }
         });
 
@@ -135,22 +155,8 @@ public class ConexionBBDD {
                 });
     }
 
-    public static FirebaseAuth getAuth() {
-        return auth;
-    }
 
 
-    public interface FirestoreUserCallback {
-        void onCallback(String nombreUser, String email, boolean isAdmin, String grupoID);
-    }
-
-    public interface CodInvitacionCallback {
-        void onCodigoValido(String grupoId, String nombreGrupo);
-
-        void onCodigoNoValido();
-
-        void onError(Exception e);
-    }
 
     //método para verificar si el código de invitación introducido por el usuario coincide con el existente de algún grupo doméstico
     public void verificarCodigoInvitacion(String codigoInput, CodInvitacionCallback callback) {
@@ -180,9 +186,45 @@ public class ConexionBBDD {
                 });
     }
 
-    public void registrarTareaBBDD(Tarea tarea, Context context, TareaCallback callback){
+    public void registrarTareaBBDD(Tarea tarea, Context context, TareaCallback callback) {
         db.collection("tareas").document().set(tarea);
     }
+
+    //recuperar miembros del grupo de la BBDD para mostrarlos en su recycler view
+    public void recuperarMiembrosGrupo(String grupoID, Context context, MiembrosCallback callback) {
+        db.collection("gruposDomesticos").whereEqualTo("grupoID", grupoID).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                QuerySnapshot querySnapshot = task.getResult();
+                if (!querySnapshot.isEmpty()) {
+                    List<Usuario> listaUsuarios = new ArrayList<>();
+                    // Solo debería haber un documento con ese grupoID
+                    DocumentSnapshot documento = querySnapshot.getDocuments().get(0);
+
+                    // Obtener el array de miembros
+                    List<Map<String, Object>> miembros = (List<Map<String, Object>>) documento.get("miembros");
+                    if (miembros != null) {
+                        for (Map<String, Object> miembro : miembros) {
+                            String userID = (String) miembro.get("userID");
+                            String nombre = (String) miembro.get("nombre");
+                            String email = (String) miembro.get("email");
+                            boolean isAdmin = (boolean) miembro.get("admin");
+                            // Añade aquí otros campos que tengas en el objeto miembro
+
+                            Usuario usuario = new Usuario( userID,  nombre,  grupoID,  isAdmin,  email); // Ajusta el constructor según tu clase Usuario
+                            System.out.println(userID);
+                            listaUsuarios.add(usuario);
+                        }
+                        callback.onRecoverMiembrosSuccess(listaUsuarios);
+                    }
+
+                } else {
+                    callback.onFailure(task.getException());
+                }
+            }
+        });
+    }
+
+    //método para recuperar las tareas de cada grupo doméstico desde la BBDD
     public void recuperarTareasGrupo(String grupoID, Context context, TareaCallback callback) {
         db.collection("tareas").whereEqualTo("grupoID", grupoID).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -209,11 +251,32 @@ public class ConexionBBDD {
         });
     }
 
+    //interfaces de callback para manejar operaciones de éxito, error y envío y recibimiento de datos
+    public interface FirestoreUserCallback {
+        void onCallback(String nombreUser, String email, boolean isAdmin, String grupoID, String nombreGrupo);
+    }
 
+    //verificar el código de invitación
+    public interface CodInvitacionCallback {
+        void onCodigoValido(String grupoId, String nombreGrupo);
+
+        void onCodigoNoValido();
+
+        void onError(Exception e);
+    }
     public interface TareaCallback {
         void onSuccessRecoveringTareas(List<Tarea> listaTareas);
+
         void onSuccessRegisteringTarea();
+
         void onFailure(Exception e);
+    }
+
+    // manejar la recuperación de los miembros de un grupo
+    public interface MiembrosCallback {
+        void onRecoverMiembrosSuccess(List<Usuario> listaUsuarios);
+
+        void onFailure(Exception exception);
     }
 
     // Interfaz para manejar el resultado de la autenticación

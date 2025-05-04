@@ -11,6 +11,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.example.matesync.R;
 import com.google.android.material.navigation.NavigationView;
 
 public class MenuLateralManager {
@@ -75,5 +76,13 @@ public class MenuLateralManager {
 
     public boolean isDrawerOpen() {
         return drawerLayout.isDrawerOpen(GravityCompat.START);
+    }
+
+    public TextView getTvNombre() {
+        return tvNombre;
+    }
+
+    public TextView getTvEmail() {
+        return tvEmail;
     }
 }

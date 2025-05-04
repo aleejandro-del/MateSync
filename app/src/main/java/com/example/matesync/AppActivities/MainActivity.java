@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements MenuLateralManage
         // Manejar clics en los ítems
 
         if (item.getItemId() == R.id.nav_grupoDomesticoHome) {
-            Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
+            Intent intent = new Intent(MainActivity.this, GrupoDomHomeActivity.class);
             startActivity(intent);
             finish();
         } else if (item.getItemId() == R.id.nav_tareas) {
