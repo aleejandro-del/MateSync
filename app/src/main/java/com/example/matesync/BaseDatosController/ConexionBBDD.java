@@ -139,6 +139,7 @@ public class ConexionBBDD {
                 });
     }
 
+    //método que se ejecutará cuando un usuario introduzca el cód de invitación y se meta a un grupo correctamente
     public void addUserAGrupo(Usuario user, String grupoID, Context context) {
         db.collection("gruposDomesticos")
                 .document(grupoID)
