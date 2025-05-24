@@ -6,6 +6,7 @@ import android.widget.Toast;
 
 import com.example.matesync.AuthActivities.RegisterActivity;
 import com.example.matesync.Modelo.GrupoDomestico;
+import com.example.matesync.Modelo.MovimientoEconomico;
 import com.example.matesync.Modelo.Producto;
 import com.example.matesync.Modelo.Tarea;
 import com.example.matesync.Modelo.Usuario;
@@ -16,9 +17,9 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,10 +29,20 @@ public class ConexionBBDD {
     private static ConexionBBDD conn;
     private static FirebaseAuth auth;
     private static FirebaseFirestore db;
+    private List<ListenerRegistration> activeListeners;
 
     private ConexionBBDD() {
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        activeListeners = new ArrayList<>();
+    }
+
+    // Método para limpiar todos los listeners cuando ya no sean necesarios
+    public void cleanupListeners() {
+        for (ListenerRegistration listener : activeListeners) {
+            listener.remove();
+        }
+        activeListeners.clear();
     }
 
     //singleton
@@ -51,10 +62,8 @@ public class ConexionBBDD {
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-
                         FirebaseUser user = auth.getCurrentUser();
                         if (user != null) {
-
                             saveUserDataBBDD(user.getUid(), email, nombre, context, callback);
                         }
                     } else {
@@ -62,7 +71,6 @@ public class ConexionBBDD {
                         callback.onFailure(task.getException());
                     }
                 });
-
     }
 
     //serializar Usuario para meterlo en Firestore
@@ -71,15 +79,12 @@ public class ConexionBBDD {
         db.collection("usuarios").document(uid)
                 .set(usuario)
                 .addOnSuccessListener(aVoid -> {
-
                     callback.onSuccess();
                 })
                 .addOnFailureListener(e -> {
-
                     callback.onFailure(e);
                 });
     }
-
 
     //método para recuperar datos de la BBDD de un user mediante su UID
     public void getUserBBDDdata(String uid, FirestoreUserCallback callback) {
@@ -94,49 +99,40 @@ public class ConexionBBDD {
                     String grupoUserID = documentSnapshot.getString("grupoID");
                     boolean isAdmin = documentSnapshot.getBoolean("admin");
 
-                    System.out.println(nombreUser);
-                    System.out.println(email);
-                    System.out.println(grupoUserID);
-                    System.out.println(isAdmin);
-                    System.out.println(uid);
                     // Consulta adicional para obtener el nombre del grupo
-                    DocumentReference grupoDoc = db.collection("gruposDomesticos").document(grupoUserID);
-                    grupoDoc.get().addOnCompleteListener(grupoTask -> {
-                        if (grupoTask.isSuccessful()) {
-                            DocumentSnapshot grupoSnapshot = grupoTask.getResult();
-                            String nombreGrupo = grupoSnapshot.exists() ?
-                                    grupoSnapshot.getString("nombreGrupo") : null;
+                    if (grupoUserID != null && !grupoUserID.isEmpty()) {
+                        DocumentReference grupoDoc = db.collection("gruposDomesticos").document(grupoUserID);
+                        grupoDoc.get().addOnCompleteListener(grupoTask -> {
+                            if (grupoTask.isSuccessful()) {
+                                DocumentSnapshot grupoSnapshot = grupoTask.getResult();
+                                String nombreGrupo = grupoSnapshot.exists() ?
+                                        grupoSnapshot.getString("nombreGrupo") : null;
 
-                            callback.onCallback(nombreUser, email, isAdmin, grupoUserID, nombreGrupo);  // Devuelve los datos recogidos de la BBDD usando el callback
-                        } else {
-                            System.out.println("Error al obtener grupo: " + grupoTask.getException());
-                            callback.onCallback(nombreUser, email, isAdmin, grupoUserID, null);
-                        }
-                    });
-
+                                callback.onCallback(nombreUser, email, isAdmin, grupoUserID, nombreGrupo);
+                            } else {
+                                callback.onCallback(nombreUser, email, isAdmin, grupoUserID, null);
+                            }
+                        });
+                    } else {
+                        callback.onCallback(nombreUser, email, isAdmin, grupoUserID, null);
+                    }
                 } else {
-                    System.out.println("El documento no existe");
-                    callback.onCallback(null, null, false, null, null); // Devuelve null si el documento no existe
+                    callback.onCallback(null, null, false, null, null);
                 }
             } else {
-                System.out.println("Error al obtener el documento: " + task.getException());
-                callback.onCallback(null, null, false, null, null); // Devuelve null si hay un error
+                callback.onCallback(null, null, false, null, null);
             }
         });
-
     }
-
 
     //método para registrar un Grupo Doméstico en la BBDD
     public void registrarGrupoBBDD(String grupoID, GrupoDomestico grupoDomestico, AuthCallback callback) {
         db.collection("gruposDomesticos").document(grupoID)
                 .set(grupoDomestico)
                 .addOnSuccessListener(aVoid -> {
-
                     callback.onSuccess();
                 })
                 .addOnFailureListener(e -> {
-
                     callback.onFailure(e);
                 });
     }
@@ -158,27 +154,21 @@ public class ConexionBBDD {
                 });
     }
 
-
     //método para verificar si el código de invitación introducido por el usuario coincide con el existente de algún grupo doméstico
     public void verificarCodigoInvitacion(String codigoInput, CodInvitacionCallback callback) {
         db.collection("gruposDomesticos")
-                //se pone la condición de la query
                 .whereEqualTo("codigoInvitacion", codigoInput.toUpperCase().trim())
-                .limit(1) // Solo necesitamos un documento que coincida
+                .limit(1)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         QuerySnapshot querySnapshot = task.getResult();
                         if (!querySnapshot.isEmpty()) {
-                            // Encontramos un grupo con este código
                             DocumentSnapshot document = querySnapshot.getDocuments().get(0);
                             String grupoId = document.getId();
                             String nombreGrupo = document.getString("nombreGrupo");
-
-                            // se devuelve el id y nombre del grupo encontrado
                             callback.onCodigoValido(grupoId, nombreGrupo);
                         } else {
-                            // No se encontró ningún grupo con este código
                             callback.onCodigoNoValido();
                         }
                     } else {
@@ -187,177 +177,229 @@ public class ConexionBBDD {
                 });
     }
 
+    //método para registrar una tarea en la BBDD
     public void registrarTareaBBDD(Tarea tarea, Context context, TareaCallback callback) {
         CollectionReference productosRef = db.collection("tareas");
         String tareaID = productosRef.document().getId();
         tarea.setTareaID(tareaID);
-        db.collection("tareas").document(tareaID).set(tarea);
+        db.collection("tareas").document(tareaID).set(tarea)
+                .addOnSuccessListener(aVoid -> callback.onSuccessRegisteringTarea())
+                .addOnFailureListener(e -> callback.onFailure(e));
     }
 
+    //método para registrar un producto en la BBDD
     public void registrarProductoBBDD(Producto producto, Context context, ProductoCallback callback) {
         CollectionReference productosRef = db.collection("productos");
         String productoID = productosRef.document().getId();
         producto.setProductoID(productoID);
-        db.collection("productos").document(productoID).set(producto);
+        db.collection("productos").document(productoID).set(producto)
+                .addOnSuccessListener(aVoid -> callback.onSuccessRegisteringProducto())
+                .addOnFailureListener(e -> callback.onFailure(e));
     }
 
-    //recuperar miembros del grupo de la BBDD para mostrarlos en su recycler view
+    //método para registrar un movimiento económico en la BBDD
+    public void registrarMovEcoBBDD(MovimientoEconomico movimientoEconomico, Context context, MovEcoCallback callback) {
+        CollectionReference productosRef = db.collection("movimientosEconomicos");
+        String movID = productosRef.document().getId();
+        movimientoEconomico.setMovID(movID);
+        db.collection("movimientosEconomicos").document(movID).set(movimientoEconomico)
+                .addOnSuccessListener(aVoid -> callback.onSuccessRegisteringMovimiento())
+                .addOnFailureListener(e -> callback.onFailure(e));
+    }
+
+    //recuperar miembros del grupo de la BBDD para mostrarlos en su recycler view (con listener en tiempo real)
     public void recuperarMiembrosGrupo(String grupoID, Context context, MiembrosCallback callback) {
-        db.collection("gruposDomesticos").whereEqualTo("grupoID", grupoID).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                QuerySnapshot querySnapshot = task.getResult();
-                if (!querySnapshot.isEmpty()) {
-                    List<Usuario> listaUsuarios = new ArrayList<>();
-                    // Solo debería haber un documento con ese grupoID
-                    DocumentSnapshot documento = querySnapshot.getDocuments().get(0);
-
-                    // Obtener el array de miembros
-                    List<Map<String, Object>> miembros = (List<Map<String, Object>>) documento.get("miembros");
-                    if (miembros != null) {
-                        for (Map<String, Object> miembro : miembros) {
-                            String userID = (String) miembro.get("userID");
-                            String nombre = (String) miembro.get("nombre");
-                            String email = (String) miembro.get("email");
-                            boolean isAdmin = (boolean) miembro.get("admin");
-                            // Añade aquí otros campos que tengas en el objeto miembro
-
-                            Usuario usuario = new Usuario(userID, nombre, grupoID, isAdmin, email); // Ajusta el constructor según tu clase Usuario
-                            System.out.println(userID);
-                            listaUsuarios.add(usuario);
-                        }
-                        callback.onRecoverMiembrosSuccess(listaUsuarios);
-                    }
-
-                } else {
-                    callback.onFailure(task.getException());
-                }
-            }
-        });
-    }
-
-    //método para recuperar las tareas de cada grupo doméstico desde la BBDD
-    public void recuperarTareasGrupo(String grupoID, Context context, TareaCallback callback) {
-        db.collection("tareas").whereEqualTo("grupoID", grupoID).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                QuerySnapshot querySnapshot = task.getResult();
-                if (!querySnapshot.isEmpty()) {
-                    List<Tarea> listaTareas = new ArrayList<>();
-
-                    for (QueryDocumentSnapshot document : querySnapshot) {
-                        String nombreTarea = document.getString("nombre");
-                        String descripcionTarea = document.getString("descripcion");
-                        String userID = document.getString("userID");
-                        boolean isDone = Boolean.TRUE.equals(document.getBoolean("isDone"));
-
-                        // Crear objeto Tarea y añadir a la lista
-                        Tarea tarea = new Tarea(document.getId(), userID, grupoID, nombreTarea, descripcionTarea, isDone);
-                        listaTareas.add(tarea);
-                        System.out.println(tarea);
-                        // Puedes devolver más información si necesitas
-                        callback.onSuccessRecoveringTareas(listaTareas);
-                    }
-                } else {
-                    callback.onFailure(task.getException());
-                }
-            }
-        });
-    }
-
-    public void recuperarProductosGrupo(String grupoID, Context context, ProductoCallback callback) {
-        db.collection("productos")
+        ListenerRegistration listener = db.collection("gruposDomesticos")
                 .whereEqualTo("grupoID", grupoID)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        QuerySnapshot querySnapshot = task.getResult();
-                        List<Producto> listaProductos = new ArrayList<>();
+                .addSnapshotListener((querySnapshot, e) -> {
+                    if (e != null) {
+                        callback.onFailure(e);
+                        return;
+                    }
 
-                        if (!querySnapshot.isEmpty()) {
-                            for (QueryDocumentSnapshot document : querySnapshot) {
-                                try {
-                                    String nombreTarea = document.getString("nombre");
-                                    String descripcionTarea = document.getString("descripcion");
-                                    String userID = document.getString("userID");
+                    if (querySnapshot != null && !querySnapshot.isEmpty()) {
+                        List<Usuario> listaUsuarios = new ArrayList<>();
+                        DocumentSnapshot documento = querySnapshot.getDocuments().get(0);
+                        List<Map<String, Object>> miembros = (List<Map<String, Object>>) documento.get("miembros");
 
-                                    // Manejo más robusto del campo cantidad
-                                    int cantidad = 0;
-                                    Object cantidadObj = document.get("cantidad");
-                                    if (cantidadObj != null) {
-                                        if (cantidadObj instanceof Long) {
-                                            cantidad = ((Long) cantidadObj).intValue();
-                                        } else if (cantidadObj instanceof String) {
-                                            cantidad = Integer.parseInt((String) cantidadObj);
-                                        } else if (cantidadObj instanceof Integer) {
-                                            cantidad = (Integer) cantidadObj;
-                                        }
-                                    }
-
-                                    Producto producto = new Producto(
-                                            document.getId(),
-                                            userID,
-                                            grupoID,
-                                            nombreTarea,
-                                            descripcionTarea,
-                                            cantidad
-                                    );
-                                    listaProductos.add(producto);
-                                } catch (Exception e) {
-                                    Log.e("Firestore", "Error procesando documento: " + document.getId(), e);
-                                }
+                        if (miembros != null) {
+                            for (Map<String, Object> miembro : miembros) {
+                                String userID = (String) miembro.get("userID");
+                                String nombre = (String) miembro.get("nombre");
+                                String email = (String) miembro.get("email");
+                                boolean isAdmin = (Boolean) miembro.get("admin");
+                                Usuario usuario = new Usuario(userID, nombre, grupoID, isAdmin, email);
+                                listaUsuarios.add(usuario);
                             }
+                            callback.onRecoverMiembrosSuccess(listaUsuarios);
                         }
-                        // Llamar al callback UNA SOLA VEZ con la lista completa
-                        callback.onSuccessRecoveringProductos(listaProductos);
-                    } else {
-                        callback.onFailure(task.getException());
                     }
                 });
+        activeListeners.add(listener);
     }
 
-    //interfaces de callback para manejar operaciones de éxito, error y envío y recibimiento de datos
+    //método para recuperar las tareas de cada grupo doméstico desde la BBDD (con listener en tiempo real)
+    public void recuperarTareasGrupo(String grupoID, Context context, TareaCallback callback) {
+        ListenerRegistration listener = db.collection("tareas")
+                .whereEqualTo("grupoID", grupoID)
+                .addSnapshotListener((querySnapshot, e) -> {
+                    if (e != null) {
+                        callback.onFailure(e);
+                        return;
+                    }
+
+                    List<Tarea> listaTareas = new ArrayList<>();
+                    if (querySnapshot != null) {
+                        for (QueryDocumentSnapshot document : querySnapshot) {
+                            String nombreTarea = document.getString("nombre");
+                            String descripcionTarea = document.getString("descripcion");
+                            String userID = document.getString("userID");
+                            boolean isDone = Boolean.TRUE.equals(document.getBoolean("isDone"));
+
+                            Tarea tarea = new Tarea(document.getId(), userID, grupoID, nombreTarea, descripcionTarea, isDone);
+                            listaTareas.add(tarea);
+                        }
+                        callback.onSuccessRecoveringTareas(listaTareas);
+                    }
+                });
+        activeListeners.add(listener);
+    }
+
+    //método para recuperar los productos de la lista de la compra de cada grupo doméstico desde la BBDD (con listener en tiempo real)
+    public void recuperarProductosGrupo(String grupoID, Context context, ProductoCallback callback) {
+        ListenerRegistration listener = db.collection("productos")
+                .whereEqualTo("grupoID", grupoID)
+                .addSnapshotListener((querySnapshot, e) -> {
+                    if (e != null) {
+                        callback.onFailure(e);
+                        return;
+                    }
+
+                    List<Producto> listaProductos = new ArrayList<>();
+                    if (querySnapshot != null) {
+                        for (QueryDocumentSnapshot document : querySnapshot) {
+                            try {
+                                String nombre = document.getString("nombre");
+                                String descripcion = document.getString("descripcion");
+                                String userID = document.getString("userID");
+
+                                int cantidad = 0;
+                                Object cantidadObj = document.get("cantidad");
+                                if (cantidadObj != null) {
+                                    if (cantidadObj instanceof Long) {
+                                        cantidad = ((Long) cantidadObj).intValue();
+                                    } else if (cantidadObj instanceof String) {
+                                        cantidad = Integer.parseInt((String) cantidadObj);
+                                    } else if (cantidadObj instanceof Integer) {
+                                        cantidad = (Integer) cantidadObj;
+                                    }
+                                }
+
+                                Producto producto = new Producto(document.getId(), userID, grupoID, nombre, descripcion, cantidad);
+                                listaProductos.add(producto);
+                            } catch (Exception ex) {
+                                Log.e("Firestore", "Error procesando documento: " + document.getId(), ex);
+                            }
+                        }
+                        callback.onSuccessRecoveringProductos(listaProductos);
+                    }
+                });
+        activeListeners.add(listener);
+    }
+
+    public void recuperarMovimientosGrupo(String grupoID, Context context, MovEcoCallback callback) {
+        ListenerRegistration listener = db.collection("movimientosEconomicos")
+                .whereEqualTo("grupoID", grupoID)
+                .addSnapshotListener((querySnapshot, e) -> {
+                    if (e != null) {
+                        Log.e("Firestore", "Error en listener movimientos", e);
+                        callback.onFailure(e);
+                        return;
+                    }
+
+                    if (querySnapshot == null) {
+                        Log.d("Firestore", "Movimientos snapshot es null");
+                        callback.onSuccessRecoveringMovimientos(new ArrayList<>());
+                        return;
+                    }
+
+                    List<MovimientoEconomico> listaMovimientos = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        try {
+                            Log.d("Firestore", "Procesando movimiento: " + document.getId());
+
+                            String conceptoMov = document.getString("concepto");
+                            String userID = document.getString("userID");
+                            String tipoMov = document.getString("tipo");
+
+                            // Conversión más robusta del valor
+                            float valor = 0f;
+                            Object valorObj = document.get("valor");
+                            if (valorObj != null) {
+                                if (valorObj instanceof Double) {
+                                    valor = ((Double) valorObj).floatValue();
+                                } else if (valorObj instanceof Long) {
+                                    valor = ((Long) valorObj).floatValue();
+                                } else if (valorObj instanceof Integer) {
+                                    valor = ((Integer) valorObj).floatValue();
+                                } else if (valorObj instanceof String) {
+                                    try {
+                                        valor = Float.parseFloat((String) valorObj);
+                                    } catch (NumberFormatException ex) {
+                                        Log.e("Firestore", "Error parseando valor", ex);
+                                    }
+                                }
+                            }
+
+                            MovimientoEconomico movimiento = new MovimientoEconomico(
+                                    document.getId(), grupoID, userID, conceptoMov, tipoMov, valor);
+                            listaMovimientos.add(movimiento);
+                        } catch (Exception ex) {
+                            Log.e("Firestore", "Error procesando documento: " + document.getId(), ex);
+                        }
+                    }
+                    Log.d("Firestore", "Movimientos recuperados: " + listaMovimientos.size());
+                    callback.onSuccessRecoveringMovimientos(listaMovimientos);
+                });
+        activeListeners.add(listener);
+    }
+
+    //interfaces de callback
     public interface FirestoreUserCallback {
         void onCallback(String nombreUser, String email, boolean isAdmin, String grupoID, String nombreGrupo);
     }
 
-    //verificar el código de invitación
     public interface CodInvitacionCallback {
         void onCodigoValido(String grupoId, String nombreGrupo);
-
         void onCodigoNoValido();
-
         void onError(Exception e);
     }
 
-    // manejar la recuperación de las tareas de un grupo
     public interface TareaCallback {
         void onSuccessRecoveringTareas(List<Tarea> listaTareas);
-
         void onSuccessRegisteringTarea();
-
         void onFailure(Exception e);
     }
 
-    // manejar la recuperación de los productos de un grupo
     public interface ProductoCallback {
         void onSuccessRecoveringProductos(List<Producto> listaProductos);
-
         void onSuccessRegisteringProducto();
-
         void onFailure(Exception e);
     }
 
-    // manejar la recuperación de los miembros de un grupo
+    public interface MovEcoCallback {
+        void onSuccessRecoveringMovimientos(List<MovimientoEconomico> listaMovimientos);
+        void onSuccessRegisteringMovimiento();
+        void onFailure(Exception e);
+    }
+
     public interface MiembrosCallback {
         void onRecoverMiembrosSuccess(List<Usuario> listaUsuarios);
-
         void onFailure(Exception exception);
     }
 
-    // Interfaz para manejar el resultado de la autenticación
     public interface AuthCallback {
         void onSuccess();
-
         void onFailure(Exception exception);
     }
-
 }
