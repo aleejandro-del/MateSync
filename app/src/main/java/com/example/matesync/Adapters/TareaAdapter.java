@@ -1,4 +1,4 @@
-package com.example.matesync.Modelo;
+package com.example.matesync.Adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -6,6 +6,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.matesync.Modelo.Tarea;
 import com.example.matesync.R;
 import java.util.List;
 
@@ -29,7 +31,7 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
     @Override
     public TareaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_lista, parent, false);
+                .inflate(R.layout.item_lista_tarea, parent, false);
         return new TareaViewHolder(view);
     }
 

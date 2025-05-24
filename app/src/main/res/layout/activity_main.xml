@@ -33,34 +33,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/materialCardView"
-                    android:layout_width="380dp"
-                    android:layout_height="174dp"
-                    android:layout_margin="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/tvTareas"
-                    app:layout_constraintVertical_bias="0.0"
-                    app:strokeColor="@color/material_dynamic_neutral80"
-                    app:strokeWidth="1dp">
-
-                    <!-- RecyclerView dentro del CardView -->
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerViewTareas"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-
-
-                        android:scrollbars="vertical" />
-                </com.google.android.material.card.MaterialCardView>
-
                 <TextView
                     android:id="@+id/tvTareas"
                     android:layout_width="wrap_content"
@@ -71,11 +43,72 @@
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.069"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/toolbar"
-                    app:layout_constraintVertical_bias="0.012" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.1" />
 
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardViewTareas"
+                    android:layout_width="370dp"
+                    android:layout_height="200dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvTareas"
+                    app:layout_constraintVertical_bias="0.02"
+                    app:strokeColor="@color/material_dynamic_neutral80"
+                    app:strokeWidth="1dp">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewTareas"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scrollbars="vertical" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+
+                <TextView
+                    android:id="@+id/tvListaCompra"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Lista de la compra"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.497"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.45" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardViewProductos"
+                    android:layout_width="370dp"
+                    android:layout_height="200dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvListaCompra"
+                    app:layout_constraintVertical_bias="0.02"
+                    app:strokeColor="@color/material_dynamic_neutral80"
+                    app:strokeWidth="1dp">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewProductos"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scrollbars="vertical" />
+
+                </com.google.android.material.card.MaterialCardView>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </FrameLayout>
 

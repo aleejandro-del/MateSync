@@ -28,12 +28,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.matesync.AuthActivities.LoginActivity;
-import com.example.matesync.AuthActivities.RegisterActivity;
 import com.example.matesync.BaseDatosController.ConexionBBDD;
 import com.example.matesync.Manager.MenuLateralManager;
 import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.Modelo.Tarea;
-import com.example.matesync.Modelo.TareaAdapter;
+import com.example.matesync.Adapters.TareaAdapter;
 import com.example.matesync.R;
 import java.util.List;
 
@@ -95,14 +94,12 @@ public class TareasActivity extends AppCompatActivity implements MenuLateralMana
                     @Override
                     public void onTareaClick(Tarea tarea) {
                         // Manejar el clic en la tarea
-                        Toast.makeText(TareasActivity.this,
-                                "Tarea seleccionada: " + tarea.getNombre(),
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(TareasActivity.this, "Tarea seleccionada: " + tarea.getNombre(), Toast.LENGTH_SHORT).show();
                     }
 
                 });
-                //inflando el recyclerview y configurándolo
 
+                //inflando el recyclerview y configurándolo
                 RecyclerView recyclerView = findViewById(R.id.recyclerViewTareas);
                 recyclerView.setLayoutManager(new LinearLayoutManager(TareasActivity.this));
                 recyclerView.setAdapter(adapter);
@@ -166,7 +163,7 @@ public class TareasActivity extends AppCompatActivity implements MenuLateralMana
                     // Aquí procesas los datos (ej: guardar en ViewModel/BD)
                     Log.d("TASK", "Nombre: " + nombreTarea + ", Descripción: " + descripcionTarea);
                     ConexionBBDD conn = ConexionBBDD.getInstance();
-                    conn.registrarTareaBBDD(new Tarea(sharedPreferences.getUserName(), sharedPreferences.getUserGroupID(), nombreTarea, descripcionTarea, false), TareasActivity.this, new ConexionBBDD.TareaCallback() {
+                    conn.registrarTareaBBDD(new Tarea(sharedPreferences.getUserUID(), sharedPreferences.getUserGroupID(), nombreTarea, descripcionTarea, false), TareasActivity.this, new ConexionBBDD.TareaCallback() {
                         @Override
                         public void onSuccessRecoveringTareas(List<Tarea> listaTareas) {
 
@@ -205,13 +202,15 @@ public class TareasActivity extends AppCompatActivity implements MenuLateralMana
             startActivity(intent);
             finish();
         } else if (item.getItemId() == R.id.nav_tareas) {
-            Intent intent = new Intent(TareasActivity.this, TareasActivity.class);
+            return;
+        } else if (item.getItemId() == R.id.nav_finanzas) {
+            Intent intent = new Intent(TareasActivity.this, FinanzasActivity.class);
             startActivity(intent);
             finish();
-        } else if (item.getItemId() == R.id.nav_finanzas) {
-
         } else if (item.getItemId() == R.id.nav_listaCompra) {
-
+            Intent intent = new Intent(TareasActivity.this, ListaCompraActivity.class);
+            startActivity(intent);
+            finish();
         } else if (item.getItemId() == R.id.nav_cerrarSesion) {
             AlertDialog.Builder builder = new AlertDialog.Builder(TareasActivity.this);
             builder.setTitle("CERRAR SESIÓN");

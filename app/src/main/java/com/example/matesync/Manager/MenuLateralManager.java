@@ -20,6 +20,7 @@ public class MenuLateralManager {
     private final ActionBarDrawerToggle toggle;
     private NavigationListener listener;
     private TextView tvNombre, tvEmail;
+
     public interface NavigationListener {
         void onNavigationItemSelected(MenuItem item);
     }
@@ -60,7 +61,6 @@ public class MenuLateralManager {
             return true;
         });
     }
-
 
     public void setNavigationListener(NavigationListener listener) {
         this.listener = listener;

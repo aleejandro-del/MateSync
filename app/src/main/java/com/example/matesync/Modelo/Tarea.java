@@ -18,7 +18,6 @@ public class Tarea {
         this.isDone = isDone;
     }
     public Tarea( String userID, String grupoID, String nombre, String descripcion, boolean isDone) {
-
         this.userID = userID;
         this.grupoID = grupoID;
         this.nombre = nombre;

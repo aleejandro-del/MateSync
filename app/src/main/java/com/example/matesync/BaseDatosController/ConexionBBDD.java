@@ -6,10 +6,12 @@ import android.widget.Toast;
 
 import com.example.matesync.AuthActivities.RegisterActivity;
 import com.example.matesync.Modelo.GrupoDomestico;
+import com.example.matesync.Modelo.Producto;
 import com.example.matesync.Modelo.Tarea;
 import com.example.matesync.Modelo.Usuario;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
@@ -157,8 +159,6 @@ public class ConexionBBDD {
     }
 
 
-
-
     //método para verificar si el código de invitación introducido por el usuario coincide con el existente de algún grupo doméstico
     public void verificarCodigoInvitacion(String codigoInput, CodInvitacionCallback callback) {
         db.collection("gruposDomesticos")
@@ -188,7 +188,17 @@ public class ConexionBBDD {
     }
 
     public void registrarTareaBBDD(Tarea tarea, Context context, TareaCallback callback) {
-        db.collection("tareas").document().set(tarea);
+        CollectionReference productosRef = db.collection("tareas");
+        String tareaID = productosRef.document().getId();
+        tarea.setTareaID(tareaID);
+        db.collection("tareas").document(tareaID).set(tarea);
+    }
+
+    public void registrarProductoBBDD(Producto producto, Context context, ProductoCallback callback) {
+        CollectionReference productosRef = db.collection("productos");
+        String productoID = productosRef.document().getId();
+        producto.setProductoID(productoID);
+        db.collection("productos").document(productoID).set(producto);
     }
 
     //recuperar miembros del grupo de la BBDD para mostrarlos en su recycler view
@@ -211,7 +221,7 @@ public class ConexionBBDD {
                             boolean isAdmin = (boolean) miembro.get("admin");
                             // Añade aquí otros campos que tengas en el objeto miembro
 
-                            Usuario usuario = new Usuario( userID,  nombre,  grupoID,  isAdmin,  email); // Ajusta el constructor según tu clase Usuario
+                            Usuario usuario = new Usuario(userID, nombre, grupoID, isAdmin, email); // Ajusta el constructor según tu clase Usuario
                             System.out.println(userID);
                             listaUsuarios.add(usuario);
                         }
@@ -242,6 +252,7 @@ public class ConexionBBDD {
                         // Crear objeto Tarea y añadir a la lista
                         Tarea tarea = new Tarea(document.getId(), userID, grupoID, nombreTarea, descripcionTarea, isDone);
                         listaTareas.add(tarea);
+                        System.out.println(tarea);
                         // Puedes devolver más información si necesitas
                         callback.onSuccessRecoveringTareas(listaTareas);
                     }
@@ -250,6 +261,57 @@ public class ConexionBBDD {
                 }
             }
         });
+    }
+
+    public void recuperarProductosGrupo(String grupoID, Context context, ProductoCallback callback) {
+        db.collection("productos")
+                .whereEqualTo("grupoID", grupoID)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        QuerySnapshot querySnapshot = task.getResult();
+                        List<Producto> listaProductos = new ArrayList<>();
+
+                        if (!querySnapshot.isEmpty()) {
+                            for (QueryDocumentSnapshot document : querySnapshot) {
+                                try {
+                                    String nombreTarea = document.getString("nombre");
+                                    String descripcionTarea = document.getString("descripcion");
+                                    String userID = document.getString("userID");
+
+                                    // Manejo más robusto del campo cantidad
+                                    int cantidad = 0;
+                                    Object cantidadObj = document.get("cantidad");
+                                    if (cantidadObj != null) {
+                                        if (cantidadObj instanceof Long) {
+                                            cantidad = ((Long) cantidadObj).intValue();
+                                        } else if (cantidadObj instanceof String) {
+                                            cantidad = Integer.parseInt((String) cantidadObj);
+                                        } else if (cantidadObj instanceof Integer) {
+                                            cantidad = (Integer) cantidadObj;
+                                        }
+                                    }
+
+                                    Producto producto = new Producto(
+                                            document.getId(),
+                                            userID,
+                                            grupoID,
+                                            nombreTarea,
+                                            descripcionTarea,
+                                            cantidad
+                                    );
+                                    listaProductos.add(producto);
+                                } catch (Exception e) {
+                                    Log.e("Firestore", "Error procesando documento: " + document.getId(), e);
+                                }
+                            }
+                        }
+                        // Llamar al callback UNA SOLA VEZ con la lista completa
+                        callback.onSuccessRecoveringProductos(listaProductos);
+                    } else {
+                        callback.onFailure(task.getException());
+                    }
+                });
     }
 
     //interfaces de callback para manejar operaciones de éxito, error y envío y recibimiento de datos
@@ -265,10 +327,21 @@ public class ConexionBBDD {
 
         void onError(Exception e);
     }
+
+    // manejar la recuperación de las tareas de un grupo
     public interface TareaCallback {
         void onSuccessRecoveringTareas(List<Tarea> listaTareas);
 
         void onSuccessRegisteringTarea();
+
+        void onFailure(Exception e);
+    }
+
+    // manejar la recuperación de los productos de un grupo
+    public interface ProductoCallback {
+        void onSuccessRecoveringProductos(List<Producto> listaProductos);
+
+        void onSuccessRegisteringProducto();
 
         void onFailure(Exception e);
     }

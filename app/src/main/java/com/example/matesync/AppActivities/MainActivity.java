@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -30,9 +29,11 @@ import com.example.matesync.BaseDatosController.ConexionBBDD;
 import com.example.matesync.Manager.MenuLateralManager;
 import com.example.matesync.Manager.SharedPreferencesManager;
 
+import com.example.matesync.Modelo.Producto;
+import com.example.matesync.Adapters.ProductoAdapter;
 import com.example.matesync.Modelo.Tarea;
 
-import com.example.matesync.Modelo.TareaAdapter;
+import com.example.matesync.Adapters.TareaAdapter;
 import com.example.matesync.R;
 
 import java.util.List;
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements MenuLateralManage
         Log.d("SharedPreferences", "nombreGrupo: " + sharedPreferences.getNombreGrupo());
 
         cargarTareas();
-
+        cargarProductos();
 
         crearMenuLateral();
     }
@@ -113,10 +114,6 @@ public class MainActivity extends AppCompatActivity implements MenuLateralManage
 
             @Override
             public void onSuccessRecoveringTareas(List<Tarea> listaTareas) {
-                for (Tarea tarea : listaTareas) {
-                    System.out.println(tarea.getNombre() + ", " + tarea.getDescripcion() + ", " + tarea.isDone());
-
-                }
                 TareaAdapter adapter = new TareaAdapter(listaTareas, new TareaAdapter.OnTareaClickListener() {
                     @Override
                     public void onTareaClick(Tarea tarea) {
@@ -159,6 +156,53 @@ public class MainActivity extends AppCompatActivity implements MenuLateralManage
 
     }
 
+    private void cargarProductos() {
+        ConexionBBDD conn = ConexionBBDD.getInstance();
+        conn.recuperarProductosGrupo(sharedPreferences.getUserGroupID(), this, new ConexionBBDD.ProductoCallback() {
+
+            @Override
+            public void onSuccessRecoveringProductos(List<Producto> listaProductos) {
+
+                ProductoAdapter adapter = new ProductoAdapter(listaProductos, new ProductoAdapter.OnProductoClickListener() {
+                    @Override
+                    public void onProductoClick(Producto producto) {
+                        // Manejar el clic en la tarea
+                        Toast.makeText(MainActivity.this,"Producto seleccionada: " + producto.getNombre(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                //inflando el recyclerview y configurándolo
+
+                RecyclerView recyclerView = findViewById(R.id.recyclerViewProductos);
+                recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+                recyclerView.setAdapter(adapter);
+
+                // Si necesitas eliminar TODOS los espacios adicionales
+                recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+                    @Override
+                    public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                        outRect.set(5, 0, 0, 0); // Elimina cualquier espacio
+                    }
+                });
+                //divisor del recycler
+                Drawable dividerDrawable = ContextCompat.getDrawable(MainActivity.this, R.drawable.divider);
+                DividerItemDecoration divider = new DividerItemDecoration(MainActivity.this, DividerItemDecoration.VERTICAL);
+                divider.setDrawable(dividerDrawable);
+                recyclerView.addItemDecoration(divider);
+            }
+
+            @Override
+            public void onSuccessRegisteringProducto() {
+
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                System.out.println(e);
+            }
+        });
+
+    }
+
     //crear el menú lateral
     public void crearMenuLateral() {
         // Configurar Toolbar
@@ -185,9 +229,13 @@ public class MainActivity extends AppCompatActivity implements MenuLateralManage
             startActivity(intent);
             finish();
         } else if (item.getItemId() == R.id.nav_finanzas) {
-
+            Intent intent = new Intent(MainActivity.this, FinanzasActivity.class);
+            startActivity(intent);
+            finish();
         } else if (item.getItemId() == R.id.nav_listaCompra) {
-
+            Intent intent = new Intent(MainActivity.this, ListaCompraActivity.class);
+            startActivity(intent);
+            finish();
         } else if (item.getItemId() == R.id.nav_cerrarSesion) {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             builder.setTitle("CERRAR SESIÓN");

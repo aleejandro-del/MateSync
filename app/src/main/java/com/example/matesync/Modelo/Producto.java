@@ -4,14 +4,26 @@ public class Producto {
     private String productoID;
     private String userID;
     private String nombre;
-    private int cantidad;
+    private long cantidad;
+    private String grupoID;
+    private String descripcion;
 
-    public Producto(String productoID, String userID, String nombre, int cantidad) {
+    public Producto(String productoID, String userID, String grupoID, String nombre, String descripcion, long cantidad) {
         this.productoID = productoID;
         this.userID = userID;
         this.nombre = nombre;
         this.cantidad = cantidad;
+        this.grupoID = grupoID;
+        this.descripcion = descripcion;
     }
+    public Producto(String userID, String grupoID, String nombre, String descripcion, long cantidad) {
+        this.userID = userID;
+        this.nombre = nombre;
+        this.cantidad = cantidad;
+        this.grupoID = grupoID;
+        this.descripcion = descripcion;
+    }
+    public Producto(){}
 
     public String getProductoID() {
         return productoID;
@@ -37,11 +49,27 @@ public class Producto {
         this.nombre = nombre;
     }
 
-    public int getCantidad() {
+    public long getCantidad() {
         return cantidad;
     }
 
-    public void setCantidad(int cantidad) {
+    public void setCantidad(long cantidad) {
         this.cantidad = cantidad;
+    }
+
+    public String getGrupoID() {
+        return grupoID;
+    }
+
+    public void setGrupoID(String grupoID) {
+        this.grupoID = grupoID;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 }

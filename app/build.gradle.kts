@@ -48,8 +48,12 @@ dependencies {
 
     //dependencia de la generación de QR
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+
     //dependencias de material components
     implementation ("com.google.android.material:material:1.6.0")
+
+    //dependencias del gráfico piechart
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation(libs.firebase.firestore)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)

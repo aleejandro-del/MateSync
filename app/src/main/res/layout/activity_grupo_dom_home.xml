@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".AppActivities.GrupoDomHomeActivity">
+
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
@@ -23,21 +24,21 @@
 
                 <!-- Toolbar en la parte superior -->
 
+
                 <TextView
                     android:id="@+id/tvMiembros"
-                    android:layout_width="108dp"
-                    android:layout_height="29dp"
+                    android:layout_width="113dp"
+                    android:layout_height="32dp"
                     android:text="Miembros"
                     android:textSize="24dp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.036"
+                    app:layout_constraintHorizontal_bias="0.053"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
 
-                    app:layout_constraintVertical_bias="0.311" />
-
+                    app:layout_constraintVertical_bias="0.307" />
 
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/toolbar"
@@ -52,8 +53,8 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/materialCardView"
-                    android:layout_width="390dp"
-                    android:layout_height="485dp"
+                    android:layout_width="370dp"
+                    android:layout_height="450dp"
                     android:layout_margin="16dp"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="10dp"
@@ -89,11 +90,11 @@
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.144"
+                    app:layout_constraintHorizontal_bias="0.216"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
 
-                    app:layout_constraintVertical_bias="0.11" />
+                    app:layout_constraintVertical_bias="0.111" />
 
                 <TextView
                     android:id="@+id/textView5"
@@ -103,14 +104,14 @@
                     android:textSize="20dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.048"
+                    app:layout_constraintHorizontal_bias="0.069"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.174" />
+                    app:layout_constraintVertical_bias="0.173" />
 
                 <EditText
                     android:id="@+id/etCodigo"
-                    android:layout_width="375dp"
+                    android:layout_width="360dp"
                     android:layout_height="45dp"
                     android:ems="10"
                     android:inputType="text"
@@ -120,6 +121,20 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.208" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guideline10"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_begin="15dp" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guideline11"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_begin="395dp" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </FrameLayout>

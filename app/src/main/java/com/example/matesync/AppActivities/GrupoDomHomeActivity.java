@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -30,7 +29,7 @@ import com.example.matesync.BaseDatosController.ConexionBBDD;
 import com.example.matesync.Manager.MenuLateralManager;
 import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.Modelo.Usuario;
-import com.example.matesync.Modelo.UsuarioAdapter;
+import com.example.matesync.Adapters.UsuarioAdapter;
 import com.example.matesync.R;
 
 import java.util.List;
@@ -139,9 +138,13 @@ public class GrupoDomHomeActivity extends AppCompatActivity implements MenuLater
             startActivity(intent);
             finish();
         } else if (item.getItemId() == R.id.nav_finanzas) {
-
+            Intent intent = new Intent(GrupoDomHomeActivity.this, FinanzasActivity.class);
+            startActivity(intent);
+            finish();
         } else if (item.getItemId() == R.id.nav_listaCompra) {
-
+            Intent intent = new Intent(GrupoDomHomeActivity.this, ListaCompraActivity.class);
+            startActivity(intent);
+            finish();
         } else if (item.getItemId() == R.id.nav_cerrarSesion) {
             AlertDialog.Builder builder = new AlertDialog.Builder(GrupoDomHomeActivity.this);
             builder.setTitle("CERRAR SESIÓN");

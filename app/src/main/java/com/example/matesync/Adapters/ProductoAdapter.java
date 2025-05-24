@@ -1,4 +1,4 @@
-package com.example.matesync.Modelo;
+package com.example.matesync.Adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.matesync.Modelo.Producto;
 import com.example.matesync.R;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
     @Override
     public ProductoAdapter.ProductoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_lista, parent, false);
+                .inflate(R.layout.item_lista_producto, parent, false);
         return new ProductoAdapter.ProductoViewHolder(view);
     }
     //llena los datos de un producto en una fila.
@@ -42,7 +43,7 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
     public void onBindViewHolder(@NonNull ProductoAdapter.ProductoViewHolder holder, int position) {
         Producto producto = listaProductos.get(position);
         holder.tvNombre.setText(producto.getNombre());
-        holder.tvDesc.setText(producto.getCantidad());
+        holder.tvDesc.setText(producto.getDescripcion());
 
         // Manejo de clics
         holder.itemView.setOnClickListener(v -> {
@@ -64,8 +65,8 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
 
         public ProductoViewHolder(View itemView) {
             super(itemView);
-            tvNombre = itemView.findViewById(R.id.tvNombre);
-            tvDesc = itemView.findViewById(R.id.tvDesc);
+            tvNombre = itemView.findViewById(R.id.tvNombreProducto);
+            tvDesc = itemView.findViewById(R.id.tvDescProducto);
         }
     }
 }
