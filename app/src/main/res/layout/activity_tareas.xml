@@ -13,98 +13,76 @@
         android:layout_height="match_parent">
 
         <!-- Contenido principal -->
-        <FrameLayout
-            android:id="@+id/content_frame"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="0dp"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                android:theme="?attr/actionBarTheme"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-                <!-- Toolbar en la parte superior -->
-                <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="0dp"
-                    android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/colorPrimary"
-                    android:theme="?attr/actionBarTheme"
+            <TextView
+                android:id="@+id/tvTareas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tareas del hogar de *Grupo Doméstico*"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.072"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.099" />
+
+            <!-- Lista de tareas -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/materialCardView"
+                android:layout_width="370dp"
+                android:layout_height="585dp"
+                android:layout_margin="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="10dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.55"
+                app:strokeColor="@color/material_dynamic_neutral80"
+                app:strokeWidth="1dp">
+
+                <!-- RecyclerView dentro del CardView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerViewTareas"
+                    android:layout_width="370dp"
+                    android:layout_height="585dp"
+                    android:scrollbars="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+            </com.google.android.material.card.MaterialCardView>
 
+            <!-- Botón flotante -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btAddTarea"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="4dp"
+                android:contentDescription="Añadir tarea"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:srcCompat="@drawable/plus" />
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/materialCardView"
-                    android:layout_width="360dp"
-                    android:layout_height="585dp"
-                    android:layout_margin="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="10dp"
-
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.75"
-                    app:strokeColor="@color/material_dynamic_neutral80"
-                    app:strokeWidth="1dp">
-
-                    <!-- RecyclerView dentro del CardView -->
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerViewTareas"
-                        android:layout_width="370dp"
-                        android:layout_height="585dp"
-                        android:scrollbars="vertical"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <TextView
-                    android:id="@+id/tvTareas"
-                    android:layout_width="337dp"
-                    android:layout_height="37dp"
-                    android:text="Tareas del hogar de *Grupo Doméstico*"
-                    android:textSize="24dp"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.144"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-
-                    app:layout_constraintVertical_bias="0.125" />
-
-                <TextView
-                    android:id="@+id/tvAdd"
-                    android:layout_width="43dp"
-                    android:layout_height="17dp"
-                    android:text="Añadir"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.956"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.11" />
-
-                <ImageView
-                    android:id="@+id/ivCrear"
-                    android:layout_width="43dp"
-                    android:layout_height="36dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.956"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.14"
-                    app:srcCompat="@drawable/plus" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </FrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Menú lateral -->
         <com.google.android.material.navigation.NavigationView
@@ -114,6 +92,5 @@
             android:layout_gravity="start"
             app:headerLayout="@layout/menu_header"
             app:menu="@menu/menu_lateral" />
-
     </androidx.drawerlayout.widget.DrawerLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

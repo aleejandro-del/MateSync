@@ -29,21 +29,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.matesync.AuthActivities.LoginActivity;
 import com.example.matesync.BaseDatosController.ConexionBBDD;
+import com.example.matesync.Callbacks.ProductoCallback;
 import com.example.matesync.Manager.MenuLateralManager;
 import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.Modelo.Producto;
 import com.example.matesync.Adapters.ProductoAdapter;
 import com.example.matesync.R;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-public class ListaCompraActivity extends AppCompatActivity implements MenuLateralManager.NavigationListener {
+public class ListaCompraActivity extends AppCompatActivity{
     SharedPreferencesManager sharedPreferences;
     private MenuLateralManager navManager;
-    ImageView ivCrearListaCompra;
     EditText etProductoName, etProductoDescription;
-    TextView tvTareas;
-
+    TextView tvListaCompra;
+    private FloatingActionButton fab;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,13 +55,27 @@ public class ListaCompraActivity extends AppCompatActivity implements MenuLatera
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        crearMenuLateral();
-        sharedPreferences = new SharedPreferencesManager(this);
-        tvTareas = findViewById(R.id.tvTareas);
-        tvTareas.setText("Lista de la compra de " + sharedPreferences.getNombreGrupo());
-        ivCrearListaCompra = findViewById(R.id.ivCrearListaCompra);
 
-        ivCrearListaCompra.setOnClickListener(new View.OnClickListener() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Configuración del menú lateral (solo esta línea en cada Activity)
+        navManager = new MenuLateralManager(
+                this,
+                toolbar,
+                R.id.drawer_layout,
+                R.id.nav_view,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close,
+                sharedPreferences
+        );
+
+        sharedPreferences = new SharedPreferencesManager(this);
+        fab = findViewById(R.id.btAddProducto);
+        tvListaCompra = findViewById(R.id.tvListaCompra);
+        tvListaCompra.setText("Lista de la compra de " + sharedPreferences.getNombreGrupo());
+
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 crearDialogoCreacionProducto();
@@ -101,7 +116,7 @@ public class ListaCompraActivity extends AppCompatActivity implements MenuLatera
                     Log.d("PRODUCTO", "Nombre: " + nombreProducto + ", Descripción: " + descripcionProducto+", grupoID: "+sharedPreferences.getUserGroupID());
                     ConexionBBDD conn = ConexionBBDD.getInstance();
 
-                    conn.registrarProductoBBDD(new Producto(sharedPreferences.getUserUID(), sharedPreferences.getUserGroupID(), nombreProducto, descripcionProducto, 0), ListaCompraActivity.this, new ConexionBBDD.ProductoCallback() {
+                    conn.registrarProductoBBDD(new Producto(sharedPreferences.getUserUID(), sharedPreferences.getUserGroupID(), nombreProducto, descripcionProducto, 0), ListaCompraActivity.this, new ProductoCallback() {
 
 
                         @Override
@@ -133,7 +148,7 @@ public class ListaCompraActivity extends AppCompatActivity implements MenuLatera
 
     private void cargarProductos() {
         ConexionBBDD conn = ConexionBBDD.getInstance();
-        conn.recuperarProductosGrupo(sharedPreferences.getUserGroupID(), this, new ConexionBBDD.ProductoCallback() {
+        conn.recuperarProductosGrupo(sharedPreferences.getUserGroupID(), this, new ProductoCallback() {
 
             @Override
             public void onSuccessRecoveringProductos(List<Producto> listaProductos) {
@@ -179,63 +194,4 @@ public class ListaCompraActivity extends AppCompatActivity implements MenuLatera
 
     }
 
-    //crear el menú lateral
-    public void crearMenuLateral() {
-        // Configurar Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        // Inicializar helper
-        navManager = new MenuLateralManager(this, toolbar, R.id.drawer_layout, R.id.nav_view, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-
-        navManager.setNavigationListener(this);
-    }
-
-
-    // método que define la funcionalidad de cada item del menú lateral
-    @Override
-    public void onNavigationItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.nav_grupoDomesticoHome) {
-            Intent intent = new Intent(ListaCompraActivity.this, GrupoDomHomeActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_tareas) {
-            Intent intent = new Intent(ListaCompraActivity.this, TareasActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_finanzas) {
-            Intent intent = new Intent(ListaCompraActivity.this, FinanzasActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_listaCompra) {
-            return;
-        } else if (item.getItemId() == R.id.nav_cerrarSesion) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(ListaCompraActivity.this);
-            builder.setTitle("CERRAR SESIÓN");
-            builder.setMessage("Confirme la decisión de cerrar sesión");
-
-            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss(); // Cierra el diálogo
-                }
-            });
-
-            builder.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    sharedPreferences.clearPreferences();
-                    Intent intent = new Intent(ListaCompraActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-            });
-            builder.create();
-            builder.show();
-        } else if (item.getItemId() == R.id.nav_inicio) {
-            Intent intent = new Intent(ListaCompraActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
-    }
 }

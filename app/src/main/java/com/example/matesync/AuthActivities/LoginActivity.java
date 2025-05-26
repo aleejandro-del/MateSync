@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.matesync.AppActivities.GrupoDomActivity;
 import com.example.matesync.AppActivities.MainActivity;
 import com.example.matesync.BaseDatosController.ConexionBBDD;
+import com.example.matesync.Callbacks.FirestoreUserCallback;
 import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.R;
 import com.google.firebase.auth.FirebaseUser;
@@ -102,7 +103,7 @@ public class LoginActivity extends AppCompatActivity {
                             shared.setUserUID(userUID);
 
                             // Obtener datos adicionales de Firestore
-                            conn.getUserBBDDdata(userUID, new ConexionBBDD.FirestoreUserCallback() {
+                            conn.getUserBBDDdata(userUID, new FirestoreUserCallback() {
                                 @Override
                                 public void onCallback(String nombreUser, String email, boolean isAdmin, String grupoID, String nombreGrupo) {
                                     if (nombreUser != null && !nombreUser.isEmpty()) {

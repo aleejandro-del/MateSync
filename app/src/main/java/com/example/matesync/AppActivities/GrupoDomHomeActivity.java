@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.matesync.AuthActivities.LoginActivity;
 import com.example.matesync.BaseDatosController.ConexionBBDD;
+import com.example.matesync.Callbacks.MiembrosCallback;
 import com.example.matesync.Manager.MenuLateralManager;
 import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.Modelo.Usuario;
@@ -34,11 +36,12 @@ import com.example.matesync.R;
 
 import java.util.List;
 
-public class GrupoDomHomeActivity extends AppCompatActivity implements MenuLateralManager.NavigationListener {
+public class GrupoDomHomeActivity extends AppCompatActivity {
     private MenuLateralManager navManager;
     SharedPreferencesManager sharedPreferences;
     TextView tvNombreGrupo;
     EditText etCod;
+    ImageView ibQR;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,14 +52,29 @@ public class GrupoDomHomeActivity extends AppCompatActivity implements MenuLater
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Configuración del menú lateral
+        navManager = new MenuLateralManager(
+                this,
+                toolbar,
+                R.id.drawer_layout,
+                R.id.nav_view,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close,
+                sharedPreferences
+        );
+
         sharedPreferences = new SharedPreferencesManager(this);
+        ibQR = findViewById(R.id.ibQR);
         tvNombreGrupo = findViewById(R.id.tvNombreGrupo);
         tvNombreGrupo.setText(sharedPreferences.getNombreGrupo());
         etCod = findViewById(R.id.etCodigo);
         etCod.setText(sharedPreferences.getUserGroupID());
         etCod.setEnabled(false);
         cargarUsuarios();
-        crearMenuLateral();
 
 
 
@@ -64,7 +82,7 @@ public class GrupoDomHomeActivity extends AppCompatActivity implements MenuLater
 
     private void cargarUsuarios() {
         ConexionBBDD conn = ConexionBBDD.getInstance();
-        conn.recuperarMiembrosGrupo(sharedPreferences.getUserGroupID(), this, new ConexionBBDD.MiembrosCallback() {
+        conn.recuperarMiembrosGrupo(sharedPreferences.getUserGroupID(), this, new MiembrosCallback() {
 
             @Override
             public void onRecoverMiembrosSuccess(List<Usuario> listaUsuarios) {
@@ -113,65 +131,4 @@ public class GrupoDomHomeActivity extends AppCompatActivity implements MenuLater
         });
     }
 
-    //crear el menú lateral
-    public void crearMenuLateral() {
-        // Configurar Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-
-        // Inicializar helper
-        navManager = new MenuLateralManager(this, toolbar, R.id.drawer_layout, R.id.nav_view, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-
-        navManager.setNavigationListener(this);
-    }
-
-    @Override
-    public void onNavigationItemSelected(MenuItem item) {
-
-        if (item.getItemId() == R.id.nav_grupoDomesticoHome) {
-            Intent intent = new Intent(GrupoDomHomeActivity.this, GrupoDomHomeActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_tareas) {
-            Intent intent = new Intent(GrupoDomHomeActivity.this, TareasActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_finanzas) {
-            Intent intent = new Intent(GrupoDomHomeActivity.this, FinanzasActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_listaCompra) {
-            Intent intent = new Intent(GrupoDomHomeActivity.this, ListaCompraActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_cerrarSesion) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(GrupoDomHomeActivity.this);
-            builder.setTitle("CERRAR SESIÓN");
-            builder.setMessage("Confirme la decisión de cerrar sesión");
-
-            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss(); // Cierra el diálogo
-                }
-            });
-
-            builder.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    sharedPreferences.clearPreferences();
-                    Intent intent = new Intent(GrupoDomHomeActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-            });
-            builder.create();
-            builder.show();
-        } else if (item.getItemId() == R.id.nav_inicio) {
-            Intent intent = new Intent(GrupoDomHomeActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
-    }
 }

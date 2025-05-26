@@ -15,7 +15,7 @@
         android:src="@drawable/matesynclogo" />
 
     <TextView
-        android:id="@+id/txtUsername"
+        android:id="@+id/tvUser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -24,7 +24,7 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
     <TextView
-        android:id="@+id/txtEmail"
+        android:id="@+id/tvEmail"
         android:layout_width="wrap_content"
         android:textColor="@color/white"
         android:layout_height="wrap_content"

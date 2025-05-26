@@ -29,20 +29,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.matesync.AuthActivities.LoginActivity;
 import com.example.matesync.BaseDatosController.ConexionBBDD;
+import com.example.matesync.Callbacks.TareaCallback;
 import com.example.matesync.Manager.MenuLateralManager;
 import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.Modelo.Tarea;
 import com.example.matesync.Adapters.TareaAdapter;
 import com.example.matesync.R;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.List;
 
-public class TareasActivity extends AppCompatActivity implements MenuLateralManager.NavigationListener {
+public class TareasActivity extends AppCompatActivity{
     SharedPreferencesManager sharedPreferences;
     private MenuLateralManager navManager;
-    ImageView ivCrear;
     EditText etTaskName, etTaskDescription;
     TextView tvTareas;
-
+    private FloatingActionButton fab;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,15 +55,29 @@ public class TareasActivity extends AppCompatActivity implements MenuLateralMana
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
         sharedPreferences = new SharedPreferencesManager(this);
+        fab = findViewById(R.id.btAddTarea);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Configuración del menú lateral
+        navManager = new MenuLateralManager(
+                this,
+                toolbar,
+                R.id.drawer_layout,
+                R.id.nav_view,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close,
+                sharedPreferences
+        );
         tvTareas = findViewById(R.id.tvTareas);
         tvTareas.setText("Tareas del hogar de "+sharedPreferences.getNombreGrupo());
-        ivCrear = findViewById(R.id.ivCrear);
 
         cargarTareas();
-        crearMenuLateral();
 
-        ivCrear.setOnClickListener(new View.OnClickListener() {
+
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 crearDialogoCreacionTarea();
@@ -70,22 +86,9 @@ public class TareasActivity extends AppCompatActivity implements MenuLateralMana
 
     }
 
-    //crear el menú lateral
-    public void crearMenuLateral() {
-        // Configurar Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-
-        // Inicializar helper
-        navManager = new MenuLateralManager(this, toolbar, R.id.drawer_layout, R.id.nav_view, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-
-        navManager.setNavigationListener(this);
-    }
-
     private void cargarTareas() {
         ConexionBBDD conn = ConexionBBDD.getInstance();
-        conn.recuperarTareasGrupo(sharedPreferences.getUserGroupID(), this, new ConexionBBDD.TareaCallback() {
+        conn.recuperarTareasGrupo(sharedPreferences.getUserGroupID(), this, new TareaCallback() {
 
             @Override
             public void onSuccessRecoveringTareas(List<Tarea> listaTareas) {
@@ -163,7 +166,7 @@ public class TareasActivity extends AppCompatActivity implements MenuLateralMana
                     // Aquí procesas los datos (ej: guardar en ViewModel/BD)
                     Log.d("TASK", "Nombre: " + nombreTarea + ", Descripción: " + descripcionTarea);
                     ConexionBBDD conn = ConexionBBDD.getInstance();
-                    conn.registrarTareaBBDD(new Tarea(sharedPreferences.getUserUID(), sharedPreferences.getUserGroupID(), nombreTarea, descripcionTarea, false), TareasActivity.this, new ConexionBBDD.TareaCallback() {
+                    conn.registrarTareaBBDD(new Tarea(sharedPreferences.getUserUID(), sharedPreferences.getUserGroupID(), nombreTarea, descripcionTarea, false), TareasActivity.this, new TareaCallback() {
                         @Override
                         public void onSuccessRecoveringTareas(List<Tarea> listaTareas) {
 
@@ -192,54 +195,6 @@ public class TareasActivity extends AppCompatActivity implements MenuLateralMana
 
     }
 
-    // método que define la funcionalidad de cada item del menú lateral
-    @Override
-    public void onNavigationItemSelected(MenuItem item) {
-
-
-        if (item.getItemId() == R.id.nav_grupoDomesticoHome) {
-            Intent intent = new Intent(TareasActivity.this, GrupoDomHomeActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_tareas) {
-            return;
-        } else if (item.getItemId() == R.id.nav_finanzas) {
-            Intent intent = new Intent(TareasActivity.this, FinanzasActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_listaCompra) {
-            Intent intent = new Intent(TareasActivity.this, ListaCompraActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_cerrarSesion) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(TareasActivity.this);
-            builder.setTitle("CERRAR SESIÓN");
-            builder.setMessage("Confirme la decisión de cerrar sesión");
-
-            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss(); // Cierra el diálogo
-                }
-            });
-
-            builder.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    sharedPreferences.clearPreferences();
-                    Intent intent = new Intent(TareasActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-            });
-            builder.create();
-            builder.show();
-        } else if (item.getItemId() == R.id.nav_inicio) {
-            Intent intent = new Intent(TareasActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
-    }
 }
 
 

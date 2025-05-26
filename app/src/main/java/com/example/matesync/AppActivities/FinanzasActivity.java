@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.matesync.Adapters.MovEcoAdapter;
 import com.example.matesync.AuthActivities.LoginActivity;
 import com.example.matesync.BaseDatosController.ConexionBBDD;
+import com.example.matesync.Callbacks.MovEcoCallback;
 import com.example.matesync.Manager.MenuLateralManager;
 import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.Modelo.MovimientoEconomico;
@@ -45,7 +46,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FinanzasActivity extends AppCompatActivity implements MenuLateralManager.NavigationListener {
+public class FinanzasActivity extends AppCompatActivity  {
 
     private MenuLateralManager navManager;
     private SharedPreferencesManager sharedPreferences;
@@ -74,7 +75,19 @@ public class FinanzasActivity extends AppCompatActivity implements MenuLateralMa
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
+        // Configuración del menú lateral (solo esta línea en cada Activity)
+        navManager = new MenuLateralManager(
+                this,
+                toolbar,
+                R.id.drawer_layout,
+                R.id.nav_view,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close,
+                sharedPreferences
+        );
         sharedPreferences = new SharedPreferencesManager(this);
         recyclerView = findViewById(R.id.rvMovimientos);
         fab = findViewById(R.id.btAddMovimiento);
@@ -87,7 +100,7 @@ public class FinanzasActivity extends AppCompatActivity implements MenuLateralMa
         // *** CAMBIO: Inicializar el adapter una sola vez ***
         setupRecyclerView();
 
-        crearMenuLateral();
+       // crearMenuLateral();
 
         fab.setOnClickListener(v -> {
             crearDialogoCreacion();
@@ -166,7 +179,7 @@ public class FinanzasActivity extends AppCompatActivity implements MenuLateralMa
                     if (!concepto.isEmpty() | !valorString.isEmpty()) {
                         Log.d("TASK", "Nombre: " + concepto + ", valor: " + valor);
                         ConexionBBDD conn = ConexionBBDD.getInstance();
-                        conn.registrarMovEcoBBDD(new MovimientoEconomico(sharedPreferences.getUserUID(), sharedPreferences.getUserGroupID(), concepto, tipo, valor), FinanzasActivity.this, new ConexionBBDD.MovEcoCallback() {
+                        conn.registrarMovEcoBBDD(new MovimientoEconomico(sharedPreferences.getUserUID(), sharedPreferences.getUserGroupID(), concepto, tipo, valor), FinanzasActivity.this, new MovEcoCallback() {
                             @Override
                             public void onSuccessRecoveringMovimientos(List<MovimientoEconomico> listaMovimientos) {
 
@@ -230,7 +243,7 @@ public class FinanzasActivity extends AppCompatActivity implements MenuLateralMa
 
     private void cargarMovimientos() {
         ConexionBBDD conn = ConexionBBDD.getInstance();
-        conn.recuperarMovimientosGrupo(sharedPreferences.getUserGroupID(), this, new ConexionBBDD.MovEcoCallback() {
+        conn.recuperarMovimientosGrupo(sharedPreferences.getUserGroupID(), this, new MovEcoCallback() {
 
             @Override
             public void onSuccessRecoveringMovimientos(List<MovimientoEconomico> listaMovimientos) {
@@ -257,58 +270,5 @@ public class FinanzasActivity extends AppCompatActivity implements MenuLateralMa
                 System.out.println(e);
             }
         });
-    }
-
-    @Override
-    public void onNavigationItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.nav_grupoDomesticoHome) {
-            Intent intent = new Intent(FinanzasActivity.this, GrupoDomHomeActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_tareas) {
-            Intent intent = new Intent(FinanzasActivity.this, TareasActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_finanzas) {
-            return;
-        } else if (item.getItemId() == R.id.nav_listaCompra) {
-            Intent intent = new Intent(FinanzasActivity.this, ListaCompraActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_cerrarSesion) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(FinanzasActivity.this);
-            builder.setTitle("CERRAR SESIÓN");
-            builder.setMessage("Confirme la decisión de cerrar sesión");
-
-            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-
-            builder.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    sharedPreferences.clearPreferences();
-                    Intent intent = new Intent(FinanzasActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-            });
-            builder.create();
-            builder.show();
-        } else if (item.getItemId() == R.id.nav_inicio) {
-            Intent intent = new Intent(FinanzasActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
-    }
-
-    public void crearMenuLateral() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        navManager = new MenuLateralManager(this, toolbar, R.id.drawer_layout, R.id.nav_view, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        navManager.setNavigationListener(this);
     }
 }

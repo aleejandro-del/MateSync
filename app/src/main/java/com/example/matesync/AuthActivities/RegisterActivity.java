@@ -14,6 +14,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.matesync.BaseDatosController.ConexionBBDD;
+import com.example.matesync.Callbacks.AuthCallback;
 import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.R;
 
@@ -102,7 +103,7 @@ public class RegisterActivity extends AppCompatActivity {
         registerButton.setEnabled(true);
         ConexionBBDD auth = ConexionBBDD.getInstance();
 
-        auth.registerUser(email, nombre, password, this, new ConexionBBDD.AuthCallback() {
+        auth.registerUser(email, nombre, password, this, new AuthCallback() {
             @Override
             public void onSuccess() {
 
