@@ -1,7 +1,6 @@
 package com.example.matesync.AppActivities;
 
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -26,6 +25,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.matesync.AuthActivities.LoginActivity;
 import com.example.matesync.AuthActivities.RegisterActivity;
 import com.example.matesync.BaseDatosController.ConexionBBDD;
+import com.example.matesync.Callbacks.ProductoCallback;
+import com.example.matesync.Callbacks.TareaCallback;
 import com.example.matesync.Manager.MenuLateralManager;
 import com.example.matesync.Manager.SharedPreferencesManager;
 
@@ -34,15 +35,16 @@ import com.example.matesync.Adapters.ProductoAdapter;
 import com.example.matesync.Modelo.Tarea;
 
 import com.example.matesync.Adapters.TareaAdapter;
+import com.example.matesync.Modelo.Usuario;
 import com.example.matesync.R;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements MenuLateralManager.NavigationListener {
+public class MainActivity extends AppCompatActivity  {
     SharedPreferencesManager sharedPreferences;
     String email, userUIDshared, userNombre, isAdmin, userGroup;
     private MenuLateralManager navManager;
-
+    public static Usuario USUARIO = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +56,19 @@ public class MainActivity extends AppCompatActivity implements MenuLateralManage
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
+        // Configuración del menú lateral (solo esta línea en cada Activity)
+        navManager = new MenuLateralManager(
+                this,
+                toolbar,
+                R.id.drawer_layout,
+                R.id.nav_view,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close,
+                sharedPreferences
+        );
         checkSharedPreferences();
         Log.d("SharedPreferences", "email: " + sharedPreferences.getUserEmail());
         Log.d("SharedPreferences", "userUID: " + sharedPreferences.getUserUID());
@@ -67,7 +81,6 @@ public class MainActivity extends AppCompatActivity implements MenuLateralManage
         cargarTareas();
         cargarProductos();
 
-        crearMenuLateral();
     }
 
 
@@ -82,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements MenuLateralManage
             startActivity(intent);
             finish();
         } else if (sharedPreferences.getUserGroupID().isEmpty()) {
-            // Si userUID es null, redirige al usuario a la pantalla de registro o login
+            // Si el grupoID es null, redirige al usuario a la pantalla de registro o login
             Intent intent = new Intent(MainActivity.this, GrupoDomActivity.class);
             startActivity(intent);
             finish();
@@ -106,11 +119,14 @@ public class MainActivity extends AppCompatActivity implements MenuLateralManage
         } else {
             return;
         }
+
+        //si todo es correcto, creo un objeto Usuario que se podrá utilizar en toda la aplicación
+        USUARIO = new Usuario(sharedPreferences.getUserUID(), sharedPreferences.getUserName(), sharedPreferences.getUserGroupID(), sharedPreferences.getIsAdmin(), sharedPreferences.getUserEmail());
     }
 
     private void cargarTareas() {
         ConexionBBDD conn = ConexionBBDD.getInstance();
-        conn.recuperarTareasGrupo(sharedPreferences.getUserGroupID(), this, new ConexionBBDD.TareaCallback() {
+        conn.recuperarTareasGrupo(sharedPreferences.getUserGroupID(), this, new TareaCallback() {
 
             @Override
             public void onSuccessRecoveringTareas(List<Tarea> listaTareas) {
@@ -158,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements MenuLateralManage
 
     private void cargarProductos() {
         ConexionBBDD conn = ConexionBBDD.getInstance();
-        conn.recuperarProductosGrupo(sharedPreferences.getUserGroupID(), this, new ConexionBBDD.ProductoCallback() {
+        conn.recuperarProductosGrupo(sharedPreferences.getUserGroupID(), this, new ProductoCallback() {
 
             @Override
             public void onSuccessRecoveringProductos(List<Producto> listaProductos) {
@@ -203,63 +219,4 @@ public class MainActivity extends AppCompatActivity implements MenuLateralManage
 
     }
 
-    //crear el menú lateral
-    public void crearMenuLateral() {
-        // Configurar Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        // Inicializar helper
-        navManager = new MenuLateralManager(this, toolbar, R.id.drawer_layout, R.id.nav_view, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-
-        navManager.setNavigationListener(this);
-    }
-
-    //darle funcionalidad al pulsar los elementos del menú lateral
-    @Override
-    public void onNavigationItemSelected(MenuItem item) {
-        // Manejar clics en los ítems
-
-        if (item.getItemId() == R.id.nav_grupoDomesticoHome) {
-            Intent intent = new Intent(MainActivity.this, GrupoDomHomeActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_tareas) {
-            Intent intent = new Intent(MainActivity.this, TareasActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_finanzas) {
-            Intent intent = new Intent(MainActivity.this, FinanzasActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_listaCompra) {
-            Intent intent = new Intent(MainActivity.this, ListaCompraActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (item.getItemId() == R.id.nav_cerrarSesion) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle("CERRAR SESIÓN");
-            builder.setMessage("Confirme la decisión de cerrar sesión");
-
-            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss(); // Cierra el diálogo
-                }
-            });
-
-            builder.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    sharedPreferences.clearPreferences();
-                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-            });
-            builder.create();
-            builder.show();
-        }
-
-    }
 }

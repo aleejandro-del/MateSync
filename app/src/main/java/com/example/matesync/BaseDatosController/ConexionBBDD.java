@@ -5,6 +5,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.matesync.AuthActivities.RegisterActivity;
+import com.example.matesync.Callbacks.AuthCallback;
+import com.example.matesync.Callbacks.CodInvitacionCallback;
+import com.example.matesync.Callbacks.FirestoreUserCallback;
+import com.example.matesync.Callbacks.MiembrosCallback;
+import com.example.matesync.Callbacks.MovEcoCallback;
+import com.example.matesync.Callbacks.ProductoCallback;
+import com.example.matesync.Callbacks.TareaCallback;
 import com.example.matesync.Modelo.GrupoDomestico;
 import com.example.matesync.Modelo.MovimientoEconomico;
 import com.example.matesync.Modelo.Producto;
@@ -23,7 +30,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class ConexionBBDD {
     private static ConexionBBDD conn;
@@ -97,7 +103,8 @@ public class ConexionBBDD {
                     String nombreUser = documentSnapshot.getString("nombre");
                     String email = documentSnapshot.getString("email");
                     String grupoUserID = documentSnapshot.getString("grupoID");
-                    boolean isAdmin = documentSnapshot.getBoolean("admin");
+                    Boolean adminObj = documentSnapshot.getBoolean("admin");
+                    boolean isAdmin = adminObj != null ? adminObj : false;
 
                     // Consulta adicional para obtener el nombre del grupo
                     if (grupoUserID != null && !grupoUserID.isEmpty()) {
@@ -139,14 +146,26 @@ public class ConexionBBDD {
 
     //método que se ejecutará cuando un usuario introduzca el cód de invitación y se meta a un grupo correctamente
     public void addUserAGrupo(Usuario user, String grupoID, Context context) {
+        // Añadir usuario al array de miembros del grupo
         db.collection("gruposDomesticos")
                 .document(grupoID)
                 .update("miembros", FieldValue.arrayUnion(user))
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Firestore", "Elemento añadido al array correctamente");
-                    Toast.makeText(context, "Actualización exitosa", Toast.LENGTH_SHORT).show();
 
-                    FirebaseFirestore.getInstance().collection("usuarios").document(user.getUserID()).update("grupoID", grupoID);
+                    // También añadir el usuario a la subcolección de usuarios del grupo
+                    db.collection("gruposDomesticos").document(grupoID)
+                            .collection("usuarios").document(user.getUserID())
+                            .set(user)
+                            .addOnSuccessListener(aVoid2 -> {
+                                Toast.makeText(context, "Actualización exitosa", Toast.LENGTH_SHORT).show();
+                                // Actualizar el grupoID en la colección principal de usuarios
+                                FirebaseFirestore.getInstance().collection("usuarios").document(user.getUserID()).update("grupoID", grupoID);
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("Firestore", "Error al añadir usuario a subcolección", e);
+                                Toast.makeText(context, "Error al actualizar: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
                 })
                 .addOnFailureListener(e -> {
                     Log.e("Firestore", "Error al añadir elemento", e);
@@ -177,62 +196,62 @@ public class ConexionBBDD {
                 });
     }
 
-    //método para registrar una tarea en la BBDD
+    //método para registrar una tarea en la BBDD (ahora como subcolección)
     public void registrarTareaBBDD(Tarea tarea, Context context, TareaCallback callback) {
-        CollectionReference productosRef = db.collection("tareas");
-        String tareaID = productosRef.document().getId();
+        String grupoID = tarea.getGrupoID();
+        CollectionReference tareasRef = db.collection("gruposDomesticos").document(grupoID).collection("tareas");
+        String tareaID = tareasRef.document().getId();
         tarea.setTareaID(tareaID);
-        db.collection("tareas").document(tareaID).set(tarea)
+        tareasRef.document(tareaID).set(tarea)
                 .addOnSuccessListener(aVoid -> callback.onSuccessRegisteringTarea())
                 .addOnFailureListener(e -> callback.onFailure(e));
     }
 
-    //método para registrar un producto en la BBDD
+    //método para registrar un producto en la BBDD (ahora como subcolección)
     public void registrarProductoBBDD(Producto producto, Context context, ProductoCallback callback) {
-        CollectionReference productosRef = db.collection("productos");
+        String grupoID = producto.getGrupoID();
+        CollectionReference productosRef = db.collection("gruposDomesticos").document(grupoID).collection("productos");
         String productoID = productosRef.document().getId();
         producto.setProductoID(productoID);
-        db.collection("productos").document(productoID).set(producto)
+        productosRef.document(productoID).set(producto)
                 .addOnSuccessListener(aVoid -> callback.onSuccessRegisteringProducto())
                 .addOnFailureListener(e -> callback.onFailure(e));
     }
 
-    //método para registrar un movimiento económico en la BBDD
+    //método para registrar un movimiento económico en la BBDD (ahora como subcolección)
     public void registrarMovEcoBBDD(MovimientoEconomico movimientoEconomico, Context context, MovEcoCallback callback) {
-        CollectionReference productosRef = db.collection("movimientosEconomicos");
-        String movID = productosRef.document().getId();
+        String grupoID = movimientoEconomico.getGrupoID();
+        CollectionReference movimientosRef = db.collection("gruposDomesticos").document(grupoID).collection("movimientosEconomicos");
+        String movID = movimientosRef.document().getId();
         movimientoEconomico.setMovID(movID);
-        db.collection("movimientosEconomicos").document(movID).set(movimientoEconomico)
+        movimientosRef.document(movID).set(movimientoEconomico)
                 .addOnSuccessListener(aVoid -> callback.onSuccessRegisteringMovimiento())
                 .addOnFailureListener(e -> callback.onFailure(e));
     }
 
     //recuperar miembros del grupo de la BBDD para mostrarlos en su recycler view (con listener en tiempo real)
     public void recuperarMiembrosGrupo(String grupoID, Context context, MiembrosCallback callback) {
-        ListenerRegistration listener = db.collection("gruposDomesticos")
-                .whereEqualTo("grupoID", grupoID)
+        // Opción 1: Recuperar desde la subcolección de usuarios
+        ListenerRegistration listener = db.collection("gruposDomesticos").document(grupoID).collection("usuarios")
                 .addSnapshotListener((querySnapshot, e) -> {
                     if (e != null) {
                         callback.onFailure(e);
                         return;
                     }
 
-                    if (querySnapshot != null && !querySnapshot.isEmpty()) {
-                        List<Usuario> listaUsuarios = new ArrayList<>();
-                        DocumentSnapshot documento = querySnapshot.getDocuments().get(0);
-                        List<Map<String, Object>> miembros = (List<Map<String, Object>>) documento.get("miembros");
+                    List<Usuario> listaUsuarios = new ArrayList<>();
+                    if (querySnapshot != null) {
+                        for (QueryDocumentSnapshot document : querySnapshot) {
+                            String userID = document.getString("userID");
+                            String nombre = document.getString("nombre");
+                            String email = document.getString("email");
+                            Boolean adminObj = document.getBoolean("admin");
+                            boolean isAdmin = adminObj != null ? adminObj : false;
 
-                        if (miembros != null) {
-                            for (Map<String, Object> miembro : miembros) {
-                                String userID = (String) miembro.get("userID");
-                                String nombre = (String) miembro.get("nombre");
-                                String email = (String) miembro.get("email");
-                                boolean isAdmin = (Boolean) miembro.get("admin");
-                                Usuario usuario = new Usuario(userID, nombre, grupoID, isAdmin, email);
-                                listaUsuarios.add(usuario);
-                            }
-                            callback.onRecoverMiembrosSuccess(listaUsuarios);
+                            Usuario usuario = new Usuario(userID, nombre, grupoID, isAdmin, email);
+                            listaUsuarios.add(usuario);
                         }
+                        callback.onRecoverMiembrosSuccess(listaUsuarios);
                     }
                 });
         activeListeners.add(listener);
@@ -240,8 +259,7 @@ public class ConexionBBDD {
 
     //método para recuperar las tareas de cada grupo doméstico desde la BBDD (con listener en tiempo real)
     public void recuperarTareasGrupo(String grupoID, Context context, TareaCallback callback) {
-        ListenerRegistration listener = db.collection("tareas")
-                .whereEqualTo("grupoID", grupoID)
+        ListenerRegistration listener = db.collection("gruposDomesticos").document(grupoID).collection("tareas")
                 .addSnapshotListener((querySnapshot, e) -> {
                     if (e != null) {
                         callback.onFailure(e);
@@ -267,8 +285,7 @@ public class ConexionBBDD {
 
     //método para recuperar los productos de la lista de la compra de cada grupo doméstico desde la BBDD (con listener en tiempo real)
     public void recuperarProductosGrupo(String grupoID, Context context, ProductoCallback callback) {
-        ListenerRegistration listener = db.collection("productos")
-                .whereEqualTo("grupoID", grupoID)
+        ListenerRegistration listener = db.collection("gruposDomesticos").document(grupoID).collection("productos")
                 .addSnapshotListener((querySnapshot, e) -> {
                     if (e != null) {
                         callback.onFailure(e);
@@ -308,8 +325,7 @@ public class ConexionBBDD {
     }
 
     public void recuperarMovimientosGrupo(String grupoID, Context context, MovEcoCallback callback) {
-        ListenerRegistration listener = db.collection("movimientosEconomicos")
-                .whereEqualTo("grupoID", grupoID)
+        ListenerRegistration listener = db.collection("gruposDomesticos").document(grupoID).collection("movimientosEconomicos")
                 .addSnapshotListener((querySnapshot, e) -> {
                     if (e != null) {
                         Log.e("Firestore", "Error en listener movimientos", e);
@@ -364,42 +380,4 @@ public class ConexionBBDD {
         activeListeners.add(listener);
     }
 
-    //interfaces de callback
-    public interface FirestoreUserCallback {
-        void onCallback(String nombreUser, String email, boolean isAdmin, String grupoID, String nombreGrupo);
-    }
-
-    public interface CodInvitacionCallback {
-        void onCodigoValido(String grupoId, String nombreGrupo);
-        void onCodigoNoValido();
-        void onError(Exception e);
-    }
-
-    public interface TareaCallback {
-        void onSuccessRecoveringTareas(List<Tarea> listaTareas);
-        void onSuccessRegisteringTarea();
-        void onFailure(Exception e);
-    }
-
-    public interface ProductoCallback {
-        void onSuccessRecoveringProductos(List<Producto> listaProductos);
-        void onSuccessRegisteringProducto();
-        void onFailure(Exception e);
-    }
-
-    public interface MovEcoCallback {
-        void onSuccessRecoveringMovimientos(List<MovimientoEconomico> listaMovimientos);
-        void onSuccessRegisteringMovimiento();
-        void onFailure(Exception e);
-    }
-
-    public interface MiembrosCallback {
-        void onRecoverMiembrosSuccess(List<Usuario> listaUsuarios);
-        void onFailure(Exception exception);
-    }
-
-    public interface AuthCallback {
-        void onSuccess();
-        void onFailure(Exception exception);
-    }
 }

@@ -83,14 +83,14 @@
 
                 <TextView
                     android:id="@+id/tvNombreGrupo"
-                    android:layout_width="337dp"
-                    android:layout_height="37dp"
+                    android:layout_width="325dp"
+                    android:layout_height="41dp"
                     android:text="GRUPO DOMÉSTICO"
                     android:textSize="24dp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.216"
+                    app:layout_constraintHorizontal_bias="0.175"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
 
@@ -111,13 +111,13 @@
 
                 <EditText
                     android:id="@+id/etCodigo"
-                    android:layout_width="360dp"
-                    android:layout_height="45dp"
+                    android:layout_width="249dp"
+                    android:layout_height="50dp"
                     android:ems="10"
                     android:inputType="text"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.305"
+                    app:layout_constraintHorizontal_bias="0.092"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.208" />
@@ -135,6 +135,30 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     app:layout_constraintGuide_begin="395dp" />
+
+                <ImageView
+                    android:id="@+id/ibQR"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.781"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.208"
+                    app:srcCompat="@drawable/qr_code" />
+
+                <ImageView
+                    android:id="@+id/ibShare"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.944"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.208"
+                    app:srcCompat="@drawable/share_icon" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </FrameLayout>

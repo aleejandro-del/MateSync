@@ -1,32 +1,60 @@
 package com.example.matesync.AppActivities;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.matesync.BaseDatosController.ConexionBBDD;
+import com.example.matesync.Callbacks.AuthCallback;
+import com.example.matesync.Callbacks.CodInvitacionCallback;
+import com.example.matesync.Manager.QRManager;
 import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.Modelo.GrupoDomestico;
 import com.example.matesync.Modelo.Usuario;
 import com.example.matesync.R;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 
 import java.util.ArrayList;
 
 public class GrupoDomActivity extends AppCompatActivity {
-    Button btCrearGrupo, btUnirseGrupo;
+    private Button btCrearGrupo, btUnirseGrupo, btEscanearQR; // AÑADIDO: botón QR
+    private SharedPreferencesManager shared;
+    private ConexionBBDD conn;
+
+    // AÑADIDO: Launcher para el escáner QR
+    private final ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(
+            new ScanContract(),
+            result -> {
+                if (result.getContents() == null) {
+                    Toast.makeText(this, "Escaneo cancelado", Toast.LENGTH_SHORT).show();
+                } else {
+                    String codigoEscaneado = result.getContents();
+                    Log.d("QR_SCAN", "Código escaneado: " + codigoEscaneado);
+                    procesarCodigoQREscaneado(codigoEscaneado);
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,144 +67,323 @@ public class GrupoDomActivity extends AppCompatActivity {
             return insets;
         });
 
+        initializeComponents();
+        setupEventListeners();
+    }
+
+    private void initializeComponents() {
         btCrearGrupo = findViewById(R.id.btCrearGrupo);
         btUnirseGrupo = findViewById(R.id.btUnirseGrupo);
+        btEscanearQR = findViewById(R.id.btEscanearQR); // AÑADIDO: inicializar botón QR
+        shared = new SharedPreferencesManager(this);
+        conn = ConexionBBDD.getInstance();
+    }
 
-        EditText campoCrearGrupo = new EditText(GrupoDomActivity.this);
+    private void setupEventListeners() {
+        btCrearGrupo.setOnClickListener(v -> mostrarDialogoCrearGrupo());
+        btUnirseGrupo.setOnClickListener(v -> mostrarOpcionesUnirse()); // MODIFICADO: ahora muestra opciones
+        btEscanearQR.setOnClickListener(v -> iniciarEscaneoQR()); // AÑADIDO: listener para QR
+    }
+
+    // AÑADIDO: Método para mostrar opciones de unirse
+    private void mostrarOpcionesUnirse() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Unirse a Grupo");
+        builder.setMessage("¿Cómo quieres unirte al grupo?");
+
+        builder.setPositiveButton("Código Manual", (dialog, which) -> mostrarDialogoUnirseGrupo());
+        builder.setNeutralButton("Escanear QR", (dialog, which) -> iniciarEscaneoQR());
+        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+
+        builder.create().show();
+    }
+
+    // AÑADIDO: Método para iniciar escaneo QR
+    private void iniciarEscaneoQR() {
+        // Verificar permisos de cámara
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA}, 100);
+            return;
+        }
+
+        ScanOptions options = new ScanOptions();
+        options.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
+        options.setPrompt("Escanea el código QR del grupo");
+        options.setCameraId(0);
+        options.setBeepEnabled(true);
+        options.setBarcodeImageEnabled(true);
+        options.setOrientationLocked(false);
+
+        barcodeLauncher.launch(options);
+    }
+
+    // AÑADIDO: Método para procesar código QR escaneado
+    private void procesarCodigoQREscaneado(String codigoEscaneado) {
+        try {
+            // Validar que el código sea de 8 caracteres (formato actual)
+            if (codigoEscaneado != null && codigoEscaneado.trim().length() == 8) {
+                verificarYUnirseAGrupo(codigoEscaneado.trim().toUpperCase());
+            } else {
+                Toast.makeText(this, "El código QR no contiene un código de invitación válido de 8 caracteres",
+                        Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Log.e("QR_PROCESS", "Error al procesar código QR", e);
+            Toast.makeText(this, "Error al procesar el código QR", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void mostrarDialogoCrearGrupo() {
+        EditText campoCrearGrupo = new EditText(this);
         campoCrearGrupo.setHint("Nombre del grupo");
-        campoCrearGrupo.setWidth(70);
-        SharedPreferencesManager shared = new SharedPreferencesManager(GrupoDomActivity.this);
-        btCrearGrupo.setOnClickListener(new View.OnClickListener() {
-            GrupoDomestico grupoDom = null;
 
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(GrupoDomActivity.this);
-                builder.setTitle("CREAR GRUPO");
-                builder.setMessage("Introduce el nombre del Grupo");
-                builder.setView(campoCrearGrupo);
-                builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss(); // Cierra el diálogo
-                    }
-                });
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("CREAR GRUPO");
+        builder.setMessage("Introduce el nombre del Grupo");
+        builder.setView(campoCrearGrupo);
 
-                builder.setPositiveButton("Crear", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String nombreGrupo = campoCrearGrupo.getText().toString().trim();
-                        if (!nombreGrupo.isEmpty()) {
+        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
 
-                            String grupoID = FirebaseFirestore.getInstance().collection("gruposDomesticos").document().getId();
-                            ArrayList<Usuario> listaUsuarios = new ArrayList<Usuario>();
-                            listaUsuarios.add(new Usuario(shared.getUserUID(), shared.getUserName(), grupoID, true, shared.getUserEmail()));
-                            grupoDom = new GrupoDomestico(grupoID, nombreGrupo, generarCodigoInvitacion(), listaUsuarios);
-                            ConexionBBDD conn = ConexionBBDD.getInstance();
-                            conn.registrarGrupoBBDD(grupoID, grupoDom, new ConexionBBDD.AuthCallback() {
-                                @Override
-                                public void onSuccess() {
-                                    Toast.makeText(GrupoDomActivity.this, "Grupo creado " + nombreGrupo, Toast.LENGTH_SHORT).show();
-
-                                    String grupoID = FirebaseFirestore.getInstance().collection("gruposDomesticos").document().getId();
-                                    FirebaseFirestore.getInstance()
-                                            .collection("usuarios")
-                                            .document(shared.getUserUID())
-                                            .update("grupoID", grupoID);
-
-                                    FirebaseFirestore.getInstance()
-                                            .collection("usuarios")
-                                            .document(shared.getUserUID())
-                                            .update("admin", true);
-
-                                    shared.setNombreGrupo(nombreGrupo);
-
-                                    Intent intent = new Intent(GrupoDomActivity.this, MainActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                }
-
-                                @Override
-                                public void onFailure(Exception exception) {
-                                    Toast.makeText(GrupoDomActivity.this, "Ha habido un error al crear el grupo" + nombreGrupo, Toast.LENGTH_SHORT).show();
-                                }
-                            });
-
-                        } else {
-                            Toast.makeText(GrupoDomActivity.this, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-                builder.create();
-                builder.show();
-
+        builder.setPositiveButton("Crear", (dialog, which) -> {
+            String nombreGrupo = campoCrearGrupo.getText().toString().trim();
+            if (validarNombreGrupo(nombreGrupo)) {
+                crearGrupoDomestico(nombreGrupo);
             }
         });
-        EditText campoUnirseGrupo = new EditText(GrupoDomActivity.this);
-        campoUnirseGrupo.setHint("Código de invitación (8 caracteres)");
-        campoUnirseGrupo.setWidth(70);
-        btUnirseGrupo.setOnClickListener(new View.OnClickListener() {
+
+        builder.create().show();
+    }
+
+    private boolean validarNombreGrupo(String nombreGrupo) {
+        if (nombreGrupo.isEmpty()) {
+            Toast.makeText(this, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (nombreGrupo.length() < 3) {
+            Toast.makeText(this, "El nombre debe tener al menos 3 caracteres", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (nombreGrupo.length() > 30) {
+            Toast.makeText(this, "El nombre no puede exceder 30 caracteres", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        return true;
+    }
+
+    private void crearGrupoDomestico(String nombreGrupo) {
+        // Generar ID único SOLO UNA VEZ
+        String grupoID = FirebaseFirestore.getInstance().collection("gruposDomesticos").document().getId();
+
+        // Crear usuario administrador
+        Usuario usuarioAdmin = new Usuario(
+                shared.getUserUID(),
+                shared.getUserName(),
+                grupoID,
+                true,
+                shared.getUserEmail()
+        );
+
+        // Crear lista de miembros
+        ArrayList<Usuario> listaUsuarios = new ArrayList<>();
+        listaUsuarios.add(usuarioAdmin);
+
+        // Crear grupo doméstico
+        GrupoDomestico grupoDom = new GrupoDomestico(
+                grupoID,
+                nombreGrupo,
+                generarCodigoInvitacion(),
+                listaUsuarios
+        );
+
+        // Registrar en la base de datos
+        conn.registrarGrupoBBDD(grupoID, grupoDom, new AuthCallback() {
             @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(GrupoDomActivity.this);
-                builder.setTitle("UNIRSE A GRUPO");
-                builder.setMessage("Introduce el código de invitación del Grupo");
-                builder.setView(campoUnirseGrupo);
-                builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss(); // Cierra el diálogo
-                    }
-                });
+            public void onSuccess() {
+                Log.d("GrupoDom", "Grupo creado exitosamente con ID: " + grupoID);
+                actualizarUsuarioEnBBDD(grupoID, nombreGrupo, grupoDom.getCodigoInvitacion()); // MODIFICADO: pasar código
+            }
 
-                builder.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String codigoInv = campoUnirseGrupo.getText().toString().trim();
-                        ConexionBBDD conn = ConexionBBDD.getInstance();
-                        conn.verificarCodigoInvitacion(codigoInv, new ConexionBBDD.CodInvitacionCallback() {
-
-
-                            @Override
-                            public void onCodigoValido(String grupoId, String nombreGrupo) {
-                                conn.addUserAGrupo(new Usuario(shared.getUserUID(), shared.getUserName(), grupoId, false, shared.getUserEmail()), grupoId, GrupoDomActivity.this);
-                                SharedPreferencesManager shared = new SharedPreferencesManager(GrupoDomActivity.this);
-                                shared.setUserGroup(grupoId);
-
-                                try {
-                                    Thread.sleep(3000);
-                                    shared.setNombreGrupo(nombreGrupo);
-                                    Intent intent = new Intent(GrupoDomActivity.this, MainActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                } catch (InterruptedException e) {
-                                    throw new RuntimeException(e);
-                                }
-
-                            }
-
-                            @Override
-                            public void onCodigoNoValido() {
-                                Toast.makeText(GrupoDomActivity.this, "El grupo no existe", Toast.LENGTH_SHORT).show();
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                Toast.makeText(GrupoDomActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                });
-                builder.create();
-                builder.show();
+            @Override
+            public void onFailure(Exception exception) {
+                Log.e("GrupoDom", "Error al crear grupo", exception);
+                Toast.makeText(GrupoDomActivity.this,
+                        "Error al crear el grupo: " + exception.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         });
     }
 
+    private void actualizarUsuarioEnBBDD(String grupoID, String nombreGrupo, String codigoInvitacion) { // MODIFICADO: añadido parámetro
+        // Actualizar el usuario en la colección principal con el grupoID correcto
+        FirebaseFirestore.getInstance()
+                .collection("usuarios")
+                .document(shared.getUserUID())
+                .update("grupoID", grupoID, "admin", true)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("GrupoDom", "Usuario actualizado correctamente");
 
-    // Genera un código de 8 caracteres (similar a los UID de Firestore pero más corto)
+                    // Actualizar SharedPreferences
+                    shared.setUserGroup(grupoID);
+                    shared.setNombreGrupo(nombreGrupo);
+                    shared.setIsAdmin(true);
+
+                    Toast.makeText(GrupoDomActivity.this,
+                            "Grupo '" + nombreGrupo + "' creado exitosamente",
+                            Toast.LENGTH_SHORT).show();
+
+                    // AÑADIDO: Mostrar código QR después de crear el grupo
+                    mostrarCodigoQRGrupo(codigoInvitacion, nombreGrupo);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("GrupoDom", "Error al actualizar usuario", e);
+                    Toast.makeText(GrupoDomActivity.this,
+                            "Error al finalizar la creación del grupo",
+                            Toast.LENGTH_LONG).show();
+                });
+    }
+
+    // AÑADIDO: Método para mostrar QR después de crear grupo
+    private void mostrarCodigoQRGrupo(String codigoInvitacion, String nombreGrupo) {
+        try {
+            // Generar QR con el código de invitación
+            Bitmap qrBitmap = QRManager.generarCodigoQR(codigoInvitacion);
+
+            // Crear diálogo para mostrar el QR
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            View dialogView = getLayoutInflater().inflate(R.layout.dialog_mostrar_qr, null);
+
+            ImageView imageViewQR = dialogView.findViewById(R.id.imageViewQR);
+            imageViewQR.setImageBitmap(qrBitmap);
+
+            builder.setView(dialogView);
+            builder.setTitle("Código QR del Grupo");
+            builder.setMessage("Comparte este código QR para que otros se unan a '" + nombreGrupo + "'");
+
+            builder.setPositiveButton("Continuar", (dialog, which) -> {
+                dialog.dismiss();
+                navegarAMainActivity();
+            });
+
+            builder.create().show();
+
+        } catch (Exception e) {
+            Log.e("QR_GENERATE", "Error al generar código QR", e);
+            Toast.makeText(this, "Error al generar código QR", Toast.LENGTH_SHORT).show();
+            navegarAMainActivity();
+        }
+    }
+
+    private void mostrarDialogoUnirseGrupo() {
+        EditText campoUnirseGrupo = new EditText(this);
+        campoUnirseGrupo.setHint("Código de invitación (8 caracteres)");
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("UNIRSE A GRUPO");
+        builder.setMessage("Introduce el código de invitación del Grupo");
+        builder.setView(campoUnirseGrupo);
+
+        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+
+        builder.setPositiveButton("Aceptar", (dialog, which) -> {
+            String codigoInv = campoUnirseGrupo.getText().toString().trim();
+            if (validarCodigoInvitacion(codigoInv)) {
+                verificarYUnirseAGrupo(codigoInv);
+            }
+        });
+
+        builder.create().show();
+    }
+
+    private boolean validarCodigoInvitacion(String codigo) {
+        if (codigo.isEmpty()) {
+            Toast.makeText(this, "El código no puede estar vacío", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (codigo.length() != 8) {
+            Toast.makeText(this, "El código debe tener exactamente 8 caracteres", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        return true;
+    }
+
+    private void verificarYUnirseAGrupo(String codigoInv) {
+        conn.verificarCodigoInvitacion(codigoInv, new CodInvitacionCallback() {
+            @Override
+            public void onCodigoValido(String grupoId, String nombreGrupo) {
+                Log.d("GrupoDom", "Código válido. Uniéndose al grupo: " + nombreGrupo);
+                unirseAGrupo(grupoId, nombreGrupo);
+            }
+
+            @Override
+            public void onCodigoNoValido() {
+                Toast.makeText(GrupoDomActivity.this,
+                        "El código de invitación no es válido",
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e("GrupoDom", "Error al verificar código", e);
+                Toast.makeText(GrupoDomActivity.this,
+                        "Error al verificar el código: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void unirseAGrupo(String grupoId, String nombreGrupo) {
+        Usuario usuario = new Usuario(
+                shared.getUserUID(),
+                shared.getUserName(),
+                grupoId,
+                false,
+                shared.getUserEmail()
+        );
+
+        conn.addUserAGrupo(usuario, grupoId, this);
+
+        // Actualizar SharedPreferences
+        shared.setUserGroup(grupoId);
+        shared.setNombreGrupo(nombreGrupo);
+        shared.setIsAdmin(false);
+
+        Toast.makeText(this,
+                "Te has unido exitosamente al grupo '" + nombreGrupo + "'",
+                Toast.LENGTH_SHORT).show();
+
+        // Dar tiempo para que se complete la operación en Firestore
+        new android.os.Handler().postDelayed(() -> {
+            navegarAMainActivity();
+        }, 2000);
+    }
+
+    private void navegarAMainActivity() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    // Genera un código de 8 caracteres únicos
     public static String generarCodigoInvitacion() {
         String uuid = FirebaseFirestore.getInstance().collection("gruposDomesticos").document().getId();
-        return uuid.substring(0, 8).toUpperCase(); // Ejemplo: "A3F9B2Z7"
+        return uuid.substring(0, 8).toUpperCase();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Limpiar recursos si es necesario
+        if (conn != null) {
+            conn.cleanupListeners();
+        }
     }
 }

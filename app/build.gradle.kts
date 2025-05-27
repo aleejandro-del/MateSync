@@ -46,8 +46,12 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth-ktx")
 
-    //dependencia de la generación de QR
+    // ZXing para generar códigos QR
+    implementation ("com.google.zxing:core:3.5.2")
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+
+    // Para mostrar imágenes
+    implementation ("androidx.appcompat:appcompat:1.6.1")
 
     //dependencias de material components
     implementation ("com.google.android.material:material:1.6.0")
