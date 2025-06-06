@@ -1,62 +1,208 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_margin="16dp"
+    android:backgroundTint="@color/material_dynamic_neutral99"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
 
-    <!-- Concepto -->
-    <com.google.android.material.textfield.TextInputLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Concepto">
+        android:orientation="vertical"
+        android:padding="28dp">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etMovConcepto"
+        <!-- Header del formulario -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textCapWords"
-            android:maxLines="1" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
 
-    <!-- Cuantía -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="Cuantía">
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/movimientos_svg"
+                app:tint="@color/material_dynamic_primary30"
+                android:layout_marginEnd="12dp" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etMovCuantia"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nuevo Movimiento"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/material_dynamic_primary20" />
+
+        </LinearLayout>
+
+        <!-- Campo Concepto -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
-            android:maxLines="1"
-            android:minLines="1" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginBottom="16dp"
+            android:hint="Concepto"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusTopStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusBottomEnd="16dp"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="2dp"
+            app:boxStrokeColor="@color/material_dynamic_primary40"
+            app:hintTextColor="@color/material_dynamic_primary40"
+            app:startIconTint="@color/material_dynamic_primary40">
 
-    <!-- Tipo de movimiento -->
-    <RadioGroup
-        android:id="@+id/rgTipoMovimiento"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:orientation="horizontal"
-        android:gravity="center">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etMovConcepto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords"
+                android:maxLines="1"
+                android:textColor="@color/material_dynamic_primary20"
+                android:textSize="16sp" />
 
-        <com.google.android.material.radiobutton.MaterialRadioButton
-            android:id="@+id/rbIngreso"
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Campo Cuantía -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:hint="Cuantía"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusTopStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusBottomEnd="16dp"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="2dp"
+            app:boxStrokeColor="@color/material_dynamic_primary40"
+            app:hintTextColor="@color/material_dynamic_primary40"
+            app:startIconTint="@color/material_dynamic_primary40"
+            app:suffixText="€"
+            app:suffixTextColor="@color/material_dynamic_primary40">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etMovCuantia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:maxLines="1"
+                android:minLines="1"
+                android:textColor="@color/material_dynamic_primary20"
+                android:textSize="16sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Etiqueta para tipo de movimiento -->
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ingreso" />
+            android:text="Tipo de movimiento"
+            android:textSize="14sp"
+            android:textColor="@color/material_dynamic_primary40"
+            android:layout_marginBottom="12dp" />
 
-        <com.google.android.material.radiobutton.MaterialRadioButton
-            android:id="@+id/rbGasto"
-            android:layout_width="wrap_content"
+        <!-- RadioGroup con cards integrados -->
+        <RadioGroup
+            android:id="@+id/rgTipoMovimiento"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Gasto"
-            android:layout_marginStart="24dp" />
-    </RadioGroup>
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
 
-</LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <!-- Card Ingreso -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardIngreso"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="2dp"
+                    app:strokeColor="@color/material_dynamic_tertiary70"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/rbIngreso"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ingreso"
+                            android:textSize="13sp"
+                            android:textColor="@color/material_dynamic_tertiary20" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Card Gasto -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardGasto"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="2dp"
+                    app:strokeColor="@color/material_dynamic_tertiary70"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/rbGasto"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Gasto"
+                            android:textSize="14sp"/>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+        </RadioGroup>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

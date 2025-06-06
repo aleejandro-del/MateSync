@@ -3,6 +3,7 @@ package com.example.matesync.Adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -10,17 +11,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.matesync.Modelo.Producto;
 import com.example.matesync.R;
+import com.google.android.material.checkbox.MaterialCheckBox;
 
 import java.util.List;
 
-public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.ProductoViewHolder>{
+public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.ProductoViewHolder> {
 
     private List<Producto> listaProductos;
     private ProductoAdapter.OnProductoClickListener listener;
 
     // Interfaz para manejar clicks
     public interface OnProductoClickListener {
-        void onProductoClick(Producto producto);
+        void onGestionarProductoClick(Producto producto);
     }
 
     // Constructor mejorado del adapter de Productos
@@ -33,24 +35,34 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
     //método que infla cada item de la lista
     @NonNull
     @Override
-    public ProductoAdapter.ProductoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ProductoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_lista_producto, parent, false);
-        return new ProductoAdapter.ProductoViewHolder(view);
+        return new ProductoViewHolder(view);
     }
+
     //llena los datos de un producto en una fila.
     @Override
     public void onBindViewHolder(@NonNull ProductoAdapter.ProductoViewHolder holder, int position) {
         Producto producto = listaProductos.get(position);
         holder.tvNombre.setText(producto.getNombre());
         holder.tvDesc.setText(producto.getDescripcion());
+        holder.tvUnidadesProducto.setText(String.valueOf(producto.getCantidad()));
 
-        // Manejo de clics
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onProductoClick(producto);
+        // Resetear el estado del checkbox para evitar problemas de reciclaje
+        holder.btGestionarProducto.setOnCheckedChangeListener(null); // Eliminar listener temporalmente
+        holder.btGestionarProducto.setChecked(false); // Desmarcar por defecto
+        holder.btGestionarProducto.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked && listener != null) {
+                listener.onGestionarProductoClick(producto);
             }
         });
+    }
+
+    public void updateProductos(List<Producto> nuevosProductos) {
+        this.listaProductos.clear();
+        this.listaProductos.addAll(nuevosProductos);
+        notifyDataSetChanged();
     }
 
     @Override
@@ -60,13 +72,17 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
 
     // ViewHolder. "Reciclador" de vistas
     public static class ProductoViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvNombre;
-        public TextView tvDesc;
+        public TextView tvNombre, tvDesc, tvUnidadesProducto;
+        public MaterialCheckBox btGestionarProducto;
 
         public ProductoViewHolder(View itemView) {
             super(itemView);
             tvNombre = itemView.findViewById(R.id.tvNombreProducto);
             tvDesc = itemView.findViewById(R.id.tvDescProducto);
+            tvUnidadesProducto = itemView.findViewById(R.id.tvUnidadesProducto);
+            btGestionarProducto = itemView.findViewById(R.id.cbProducto);
+
         }
     }
 }
+

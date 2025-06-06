@@ -3,26 +3,28 @@ package com.example.matesync.Adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.matesync.AppActivities.MainActivity;
 import com.example.matesync.Modelo.Usuario;
 import com.example.matesync.R;
 
 import java.util.List;
 
-public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioViewHolder>{
+public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioViewHolder> {
     private List<Usuario> listaUsuarios;
     private OnUsuarioClickListener listener;
 
     // Interfaz para manejar clicks
     public interface OnUsuarioClickListener {
-        void onMiembroClick(Usuario usuario);
+        void onGestionarUsuarioClick(Usuario usuario);
     }
 
-    // Constructor mejorado
+    // Constructor
     public UsuarioAdapter(List<Usuario> listaUsuarios, OnUsuarioClickListener listener) {
         this.listaUsuarios = listaUsuarios;
         this.listener = listener;
@@ -33,7 +35,7 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
     public UsuarioViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_lista_miembros, parent, false);
-        return new UsuarioViewHolder(view);
+        return new UsuarioViewHolder(view, listener, listaUsuarios);
     }
 
     @Override
@@ -42,10 +44,22 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
         holder.tvNombreMiembro.setText(usuario.getNombre());
         holder.tvEmail.setText(usuario.getEmail());
 
-        // Manejo de clics
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onMiembroClick(usuario);
+        // Show admin indicator if user is admin
+        if (usuario.isAdmin()) {
+            holder.tvRolMiembro.setText("Administrador");
+        } else {
+            holder.tvRolMiembro.setText("Miembro");
+        }
+        if(MainActivity.USUARIO.isAdmin()){
+            holder.btGestionarUser.setVisibility(View.VISIBLE);
+        }else{
+            holder.btGestionarUser.setVisibility(View.GONE);
+        }
+
+        holder.btGestionarUser.setOnClickListener(v -> {
+
+            if (position != RecyclerView.NO_POSITION && listener != null) {
+                listener.onGestionarUsuarioClick(listaUsuarios.get(position));
             }
         });
     }
@@ -57,13 +71,21 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
 
     // ViewHolder como clase estática
     public static class UsuarioViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvNombreMiembro;
-        public TextView tvEmail;
+        public TextView tvNombreMiembro, tvEmail, tvRolMiembro;
+        public ImageView btGestionarUser;
+        private OnUsuarioClickListener listener;
+        private List<Usuario> listaUsuarios;
 
-        public UsuarioViewHolder(View itemView) {
+        public UsuarioViewHolder(View itemView, OnUsuarioClickListener listener, List<Usuario> listaUsuarios) {
             super(itemView);
+            this.listener = listener;
+            this.listaUsuarios = listaUsuarios;
+
             tvNombreMiembro = itemView.findViewById(R.id.tvNombreMiembro);
             tvEmail = itemView.findViewById(R.id.tvEmail);
+            tvRolMiembro = itemView.findViewById(R.id.tvRolMiembro);
+            btGestionarUser = itemView.findViewById(R.id.btGestionarUser); // Fixed missing semicolon
+
 
         }
     }

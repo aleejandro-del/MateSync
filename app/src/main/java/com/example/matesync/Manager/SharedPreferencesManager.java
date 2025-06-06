@@ -10,11 +10,13 @@ public class SharedPreferencesManager {
     private static final String KEY_IS_LOGGED_IN = "isLoggedIn";
     private static final String KEY_IS_REGISTERED = "isRegistered";
     private static final String KEY_USER_EMAIL = "userEmail";
-    private static final String KEY_USER_UID = "userUID";
+    private static final String KEY_USER_UID = "userID";
     private static final String KEY_IS_ADMIN = "isAdmin";
     private static final String KEY_USER_GROUP_ID = "userGroupID";
     private static final String KEY_USER_NAME = "userNombre";
     private static final String KEY_GROUP_NAME = "nombreGrupo";
+
+    private static final String KEY_GROUP_INVITE_COD = "codigoInvitacion";
 
     private static final String KEY_TIMESTAMP = "timestamp";
 
@@ -63,6 +65,11 @@ public class SharedPreferencesManager {
     }
     public void setNombreGrupo(String nombreGrupo){
         editor.putString(KEY_GROUP_NAME, nombreGrupo);
+        editor.apply();
+    }
+
+    public void setCodigoInvitacion(String codigoInvitacion){
+        editor.putString(KEY_GROUP_INVITE_COD, codigoInvitacion);
         editor.apply();
     }
     // Verificar si los datos han expirado
@@ -114,5 +121,8 @@ public class SharedPreferencesManager {
         return sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false);
 
     }
+    public String getICodInv(){
+        return sharedPreferences.getString(KEY_GROUP_INVITE_COD, "");
 
+    }
 }

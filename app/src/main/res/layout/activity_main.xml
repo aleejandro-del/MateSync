@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/material_dynamic_neutral80"
     tools:context=".AppActivities.MainActivity">
 
     <androidx.drawerlayout.widget.DrawerLayout
@@ -13,104 +14,404 @@
         android:layout_height="match_parent">
 
         <!-- Contenido principal -->
-        <FrameLayout
-            android:id="@+id/content_frame"
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <!-- App Bar con Material Design 3 -->
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appBarLayout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:background="@color/material_dynamic_primary90"
+                app:elevation="0dp">
 
-                <!-- Toolbar en la parte superior -->
-                <androidx.appcompat.widget.Toolbar
+                <com.google.android.material.appbar.MaterialToolbar
                     android:id="@+id/toolbar"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/colorPrimary"
-                    android:theme="?attr/actionBarTheme"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:background="@color/material_dynamic_primary90"
+                    app:titleTextColor="@color/material_dynamic_primary10"
+                    app:navigationIconTint="@color/material_dynamic_primary10" />
 
-                <TextView
-                    android:id="@+id/tvTareas"
-                    android:layout_width="wrap_content"
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <!-- Contenido principal con scroll -->
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="Tareas del hogar"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.1" />
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardViewTareas"
-                    android:layout_width="370dp"
-                    android:layout_height="200dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvTareas"
-                    app:layout_constraintVertical_bias="0.02"
-                    app:strokeColor="@color/material_dynamic_neutral80"
-                    app:strokeWidth="1dp">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerViewTareas"
+                    <!-- Header de bienvenida -->
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scrollbars="vertical" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="20dp"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        android:backgroundTint="@color/material_dynamic_primary95">
 
-                </com.google.android.material.card.MaterialCardView>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="24dp">
 
+                            <!-- Saludo principal -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="8dp">
 
-                <TextView
-                    android:id="@+id/tvListaCompra"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Lista de la compra"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.497"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.45" />
+                                <ImageView
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:src="@drawable/inicio_logo"
+                                    app:tint="@color/material_dynamic_primary30"
+                                    android:layout_marginEnd="16dp" />
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardViewProductos"
-                    android:layout_width="370dp"
-                    android:layout_height="200dp"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="4dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvListaCompra"
-                    app:layout_constraintVertical_bias="0.02"
-                    app:strokeColor="@color/material_dynamic_neutral80"
-                    app:strokeWidth="1dp">
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerViewProductos"
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="¡Hola!"
+                                        android:textSize="28sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/material_dynamic_primary20" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Tu hogar organizado"
+                                        android:textSize="16sp"
+                                        android:textColor="@color/material_dynamic_primary40" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Sección Tareas del Hogar -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardContainerTareas"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scrollbars="vertical" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="2dp"
+                        app:strokeWidth="0dp"
+                        android:backgroundTint="@color/material_dynamic_neutral99">
 
-                </com.google.android.material.card.MaterialCardView>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </FrameLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <!-- Header de Tareas -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:padding="20dp"
+                                android:paddingBottom="12dp">
+
+                                <ImageView
+                                    android:layout_width="28dp"
+                                    android:layout_height="28dp"
+                                    android:src="@drawable/task_svg"
+                                    app:tint="@color/material_dynamic_secondary30"
+                                    android:layout_marginEnd="12dp" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:id="@+id/tvTareas"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Tareas del Hogar"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/material_dynamic_neutral20" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Organiza tu día a día"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/material_dynamic_neutral50" />
+
+                                </LinearLayout>
+
+                                <!-- Indicador de tareas pendientes -->
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    app:cardCornerRadius="12dp"
+                                    app:cardElevation="0dp"
+                                    android:backgroundTint="@color/material_dynamic_secondary90">
+
+                                </com.google.android.material.card.MaterialCardView>
+
+                            </LinearLayout>
+
+                            <!-- RecyclerView Tareas -->
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/recyclerViewTareas"
+                                android:layout_width="match_parent"
+                                android:layout_height="220dp"
+                                android:clipToPadding="false"
+                                android:paddingHorizontal="12dp"
+                                android:paddingBottom="16dp"
+                                android:scrollbars="none"
+                                android:overScrollMode="never" />
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Sección Lista de la Compra -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardContainerProductos"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="2dp"
+                        app:strokeWidth="0dp"
+                        android:backgroundTint="@color/material_dynamic_neutral99">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <!-- Header de Lista de Compra -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:padding="20dp"
+                                android:paddingBottom="12dp">
+
+                                <ImageView
+                                    android:layout_width="28dp"
+                                    android:layout_height="28dp"
+                                    android:src="@drawable/listacompra_logo"
+                                    app:tint="@color/material_dynamic_tertiary30"
+                                    android:layout_marginEnd="12dp" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:id="@+id/tvListaCompra"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Lista de la Compra"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/material_dynamic_neutral20" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="No olvides nada importante"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/material_dynamic_neutral50" />
+
+                                </LinearLayout>
+
+                                <!-- Indicador de productos -->
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    app:cardCornerRadius="12dp"
+                                    app:cardElevation="0dp"
+                                    android:backgroundTint="@color/material_dynamic_tertiary90">
+
+                                </com.google.android.material.card.MaterialCardView>
+
+                            </LinearLayout>
+
+                            <!-- RecyclerView Productos -->
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/recyclerViewProductos"
+                                android:layout_width="match_parent"
+                                android:layout_height="220dp"
+                                android:clipToPadding="false"
+                                android:paddingHorizontal="12dp"
+                                android:paddingBottom="16dp"
+                                android:scrollbars="none"
+                                android:overScrollMode="never" />
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Sección Resumen Financiero -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardResumenFinanciero"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="80dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="2dp"
+                        app:strokeWidth="0dp"
+                        android:backgroundTint="@color/material_dynamic_neutral99">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="20dp">
+
+                            <!-- Header de Finanzas -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="16dp">
+
+                                <ImageView
+                                    android:layout_width="28dp"
+                                    android:layout_height="28dp"
+                                    android:src="@drawable/finanzas_logo"
+                                    app:tint="@color/material_dynamic_primary30"
+                                    android:layout_marginEnd="12dp" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:id="@+id/tvFinanzas"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Resumen de Finanzas"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/material_dynamic_neutral20" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Controla tus gastos domésticos"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/material_dynamic_neutral50" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <!-- Información financiera -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:background="@drawable/common_google_signin_btn_text_dark"
+                                android:backgroundTint="@color/material_dynamic_primary95"
+                                android:padding="16dp">
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical"
+                                    android:gravity="start">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Balance Actual"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/material_dynamic_primary40"
+                                        android:layout_marginBottom="4dp" />
+
+                                    <TextView
+                                        android:id="@+id/tvBalanceMain"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="0€"
+                                        android:textSize="23sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/material_dynamic_primary20" />
+
+                                </LinearLayout>
+
+                                <View
+                                    android:layout_width="1dp"
+                                    android:layout_height="match_parent"
+                                    android:background="@color/material_dynamic_primary80"
+                                    android:layout_marginHorizontal="16dp" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1.5"
+                                    android:orientation="vertical"
+                                    android:gravity="start">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Último Movimiento"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/material_dynamic_primary40"
+                                        android:layout_marginBottom="4dp" />
+
+                                    <TextView
+                                        android:id="@+id/tvUltimoMovimiento"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Sin movimientos"
+                                        android:textSize="14sp"
+                                        android:textColor="@color/material_dynamic_primary30"
+                                        android:maxLines="2"
+                                        android:ellipsize="end" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+            </androidx.core.widget.NestedScrollView>
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
         <!-- Menú lateral -->
         <com.google.android.material.navigation.NavigationView
@@ -118,8 +419,12 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="start"
+            android:background="@color/material_dynamic_neutral99"
             app:headerLayout="@layout/menu_header"
-            app:menu="@menu/menu_lateral" />
+            app:menu="@menu/menu_lateral"
+            app:itemTextColor="@color/material_dynamic_neutral20"
+            app:itemIconTint="@color/material_dynamic_neutral30" />
 
     </androidx.drawerlayout.widget.DrawerLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

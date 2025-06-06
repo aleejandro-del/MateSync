@@ -78,54 +78,7 @@ public class QRManager {
         }
     }
 
-    /**
-     * Valida si un texto es un código de invitación válido
-     * @param codigoInvitacion Código a validar
-     * @return true si es válido, false en caso contrario
-     */
-    public static boolean esCodigoInvitacionValido(String codigoInvitacion) {
-        return codigoInvitacion != null &&
-                !codigoInvitacion.trim().isEmpty() &&
-                codigoInvitacion.length() >= 6; // Mínimo 6 caracteres
-    }
 
-    /**
-     * Genera un código de invitación único para un grupo
-     * @param idGrupo ID del grupo
-     * @param nombreGrupo Nombre del grupo
-     * @return Código de invitación formateado
-     */
-    public static String generarCodigoInvitacion(String idGrupo, String nombreGrupo) {
-        if (idGrupo == null || nombreGrupo == null) {
-            throw new IllegalArgumentException("IdGrupo y NombreGrupo no pueden ser nulos");
-        }
-
-        // Formato: GRUPO_[ID]_[HASH_NOMBRE]
-        String hashNombre = String.valueOf(nombreGrupo.hashCode()).replace("-", "");
-        return "GRUPO_" + idGrupo + "_" + hashNombre;
-    }
-
-    /**
-     * Extrae el ID del grupo desde un código de invitación
-     * @param codigoInvitacion Código de invitación
-     * @return ID del grupo o null si el formato es inválido
-     */
-    public static String extraerIdGrupoDeInvitacion(String codigoInvitacion) {
-        if (!esCodigoInvitacionValido(codigoInvitacion) || !codigoInvitacion.startsWith("GRUPO_")) {
-            return null;
-        }
-
-        try {
-            String[] partes = codigoInvitacion.split("_");
-            if (partes.length >= 3) {
-                return partes[1]; // El ID está en la segunda posición
-            }
-        } catch (Exception e) {
-            return null;
-        }
-
-        return null;
-    }
 
     /**
      * Convierte BitMatrix a Bitmap

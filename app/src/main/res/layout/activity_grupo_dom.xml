@@ -1,85 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AppActivities.GrupoDomActivity">
+    android:background="@color/material_dynamic_neutral80"
+    tools:context=".AppActivities.AccederGrupoDomActivity">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline8"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.1" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="368dp"
-        android:layout_height="39dp"
-        android:text="Crea o únete a un Grupo Doméstico"
-        android:textSize="23sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline8"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.509" />
-
-    <Button
-        android:id="@+id/btCrearGrupo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Crear un grupo"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline8"
-        app:layout_constraintVertical_bias="0.632" />
-
-    <Button
-        android:id="@+id/btUnirseGrupo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Unirme a un grupo"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline8"
-        app:layout_constraintVertical_bias="0.47" />
-
+    <!-- Logo centrado superior -->
     <ImageView
-        android:id="@+id/imageView4"
-        android:layout_width="182dp"
-        android:layout_height="184dp"
-        android:layout_marginBottom="256dp"
+        android:id="@+id/logoImageView"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
         android:src="@drawable/matesynclogo"
-        app:layout_constraintBottom_toTopOf="@+id/guideline9"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline8"
-        app:layout_constraintVertical_bias="0.278" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline9"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.8590971" />
-
-    <Button
-        android:id="@+id/btEscanearQR"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Unirse escaneado código QR"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.765" />
+        app:layout_constraintBottom_toTopOf="@+id/grupoCard"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Tarjeta principal con estilo consistente -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/grupoCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="4dp"
+        app:strokeWidth="0dp"
+        android:backgroundTint="@color/material_dynamic_neutral99"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.6">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="32dp">
+
+            <!-- Título principal -->
+            <TextView
+                android:id="@+id/titleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Crea o únete a un\nGrupo Doméstico"
+                android:textAlignment="center"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/material_dynamic_neutral20"
+                android:layout_marginBottom="32dp"
+                android:lineSpacingExtra="4dp"/>
+
+            <!-- Botón Unirse a grupo -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btUnirseGrupo"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="16dp"
+                android:text="Unirme a un grupo"
+                app:cornerRadius="12dp"
+                app:backgroundTint="@color/material_dynamic_primary40"
+                android:textColor="@color/material_dynamic_primary99"
+                android:textSize="16sp"
+                app:iconGravity="textStart"/>
+
+            <!-- Botón Crear grupo -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btCrearGrupo"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Crear un grupo"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/material_dynamic_primary40"
+                app:strokeWidth="1dp"
+                android:textColor="@color/material_dynamic_primary40"
+                android:textSize="16sp"
+                app:iconGravity="textStart"/>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

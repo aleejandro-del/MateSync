@@ -13,6 +13,11 @@
 
     <!-- Color ROJO  -->
     <color name="ROJO">#EB114A</color>
-    <!-- Color ROJO  -->
+    <!-- Color VERDE  -->
     <color name="VERDE">#098C19</color>
+
+    <!-- Colores para el balance del Main Activity -->
+    <color name="rojo_balance_negativo">#FF5252</color>
+    <color name="verde_balance_positivo">#4CAF50</color>
+    <color name="naranja_balance_neutral">#FF9800</color>
 </resources>

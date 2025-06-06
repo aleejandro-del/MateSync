@@ -3,33 +3,32 @@ package com.example.matesync.AppActivities;
 
 import android.content.Intent;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.matesync.AuthActivities.LoginActivity;
 import com.example.matesync.AuthActivities.RegisterActivity;
-import com.example.matesync.BaseDatosController.ConexionBBDD;
+import com.example.matesync.ConexionBBDD.ConexionBBDD;
+import com.example.matesync.Callbacks.MovEcoCallback;
 import com.example.matesync.Callbacks.ProductoCallback;
 import com.example.matesync.Callbacks.TareaCallback;
 import com.example.matesync.Manager.MenuLateralManager;
 import com.example.matesync.Manager.SharedPreferencesManager;
 
+import com.example.matesync.Modelo.MovimientoEconomico;
 import com.example.matesync.Modelo.Producto;
 import com.example.matesync.Adapters.ProductoAdapter;
 import com.example.matesync.Modelo.Tarea;
@@ -40,36 +39,72 @@ import com.example.matesync.R;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity  {
-    SharedPreferencesManager sharedPreferences;
-    String email, userUIDshared, userNombre, isAdmin, userGroup;
+public class MainActivity extends AppCompatActivity {
+    private SharedPreferencesManager sharedPreferences;
     private MenuLateralManager navManager;
-    public static Usuario USUARIO = null;
+    private TextView tvBalanceMain, tvUltimoMovimiento;
+    public static Usuario USUARIO;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setTheme(R.style.AppTheme);
         setContentView(R.layout.activity_main);
+
+
+        configurarInsets();
+        inicializarComponentes();
+        verificarEstadoUsuario();
+        cargarDatos();
+    }
+
+    private void configurarInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+
+    private void inicializarComponentes() {
+        sharedPreferences = new SharedPreferencesManager(this);
+        configurarToolbar();
+        configurarMenuLateral();
+        tvBalanceMain = findViewById(R.id.tvBalanceMain);
+        tvUltimoMovimiento = findViewById(R.id.tvUltimoMovimiento);
+        USUARIO = crearUsuarioDesdeSharedPreferences();
+        logSharedPreferences();
+    }
+
+    private void configurarToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+    }
 
-        // Configuración del menú lateral (solo esta línea en cada Activity)
+    private void configurarMenuLateral() {
         navManager = new MenuLateralManager(
                 this,
-                toolbar,
+                findViewById(R.id.toolbar),
                 R.id.drawer_layout,
                 R.id.nav_view,
                 R.string.navigation_drawer_open,
                 R.string.navigation_drawer_close,
                 sharedPreferences
         );
-        checkSharedPreferences();
+    }
+
+    private Usuario crearUsuarioDesdeSharedPreferences() {
+        return new Usuario(
+                sharedPreferences.getUserUID(),
+                sharedPreferences.getUserName(),
+                sharedPreferences.getUserGroupID(),
+                sharedPreferences.getIsAdmin(),
+                sharedPreferences.getUserEmail()
+        );
+    }
+
+    private void logSharedPreferences() {
         Log.d("SharedPreferences", "email: " + sharedPreferences.getUserEmail());
         Log.d("SharedPreferences", "userUID: " + sharedPreferences.getUserUID());
         Log.d("SharedPreferences", "nombre: " + sharedPreferences.getUserName());
@@ -77,146 +112,247 @@ public class MainActivity extends AppCompatActivity  {
         Log.d("SharedPreferences", "isLogged: " + sharedPreferences.getIsLogged());
         Log.d("SharedPreferences", "UserGroupID: " + sharedPreferences.getUserGroupID());
         Log.d("SharedPreferences", "nombreGrupo: " + sharedPreferences.getNombreGrupo());
-
-        cargarTareas();
-        cargarProductos();
-
     }
 
-
-    //método para comprobar si el usuario ya se ha registrado/logeado previamente
-    private void checkSharedPreferences() {
-        sharedPreferences = new SharedPreferencesManager(this);
-
-        //si es nulo (no existe), lo mando a la pantalla de registro
+    private void verificarEstadoUsuario() {
         if (sharedPreferences.getUserUID().isEmpty()) {
-            // Si userUID es null, redirige al usuario a la pantalla de registro o login
-            Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
-            startActivity(intent);
-            finish();
+            redirigirA(RegisterActivity.class);
         } else if (sharedPreferences.getUserGroupID().isEmpty()) {
-            // Si el grupoID es null, redirige al usuario a la pantalla de registro o login
-            Intent intent = new Intent(MainActivity.this, GrupoDomActivity.class);
-            startActivity(intent);
-            finish();
+            redirigirA(AccederGrupoDomActivity.class);
+        } else if (!sharedPreferences.getIsRegistered()) {
+            redirigirA(RegisterActivity.class);
+        } else if (!sharedPreferences.getIsLogged()) {
+            redirigirA(LoginActivity.class);
         }
+    }
 
-        //aqui deberia ir el rellenado de atributos de un objeto Usuario (el que lo está usando)
+    private void redirigirA(Class<?> activityClass) {
+        startActivity(new Intent(this, activityClass));
+        finish();
+    }
 
-        boolean isRegistered = sharedPreferences.getIsRegistered();
-        boolean isLogged = sharedPreferences.getIsLogged();
-
-        if (isRegistered == false) {
-
-            Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
-            startActivity(intent);
-            finish();
-        } else if (isLogged == false) {
-            // Si el usuario está registrado pero no ha iniciado sesión, redirigir a la pantalla de login
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        } else {
-            return;
-        }
-
-        //si todo es correcto, creo un objeto Usuario que se podrá utilizar en toda la aplicación
-        USUARIO = new Usuario(sharedPreferences.getUserUID(), sharedPreferences.getUserName(), sharedPreferences.getUserGroupID(), sharedPreferences.getIsAdmin(), sharedPreferences.getUserEmail());
+    private void cargarDatos() {
+        cargarTareas();
+        cargarProductos();
+        refrescarResumenFinanciero();
     }
 
     private void cargarTareas() {
-        ConexionBBDD conn = ConexionBBDD.getInstance();
-        conn.recuperarTareasGrupo(sharedPreferences.getUserGroupID(), this, new TareaCallback() {
-
-            @Override
-            public void onSuccessRecoveringTareas(List<Tarea> listaTareas) {
-                TareaAdapter adapter = new TareaAdapter(listaTareas, new TareaAdapter.OnTareaClickListener() {
+        ConexionBBDD.getInstance().recuperarTareasGrupo(sharedPreferences.getUserGroupID(),
+                new TareaCallback() {
                     @Override
-                    public void onTareaClick(Tarea tarea) {
-                        // Manejar el clic en la tarea
-                        Toast.makeText(MainActivity.this,
-                                "Tarea seleccionada: " + tarea.getNombre(),
-                                Toast.LENGTH_SHORT).show();
+                    public void onSuccessRecoveringTareas(List<Tarea> listaTareas) {
+                        configurarRecyclerViewTareas(listaTareas);
                     }
-                });
-                //inflando el recyclerview y configurándolo
 
-                RecyclerView recyclerView = findViewById(R.id.recyclerViewTareas);
-                recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-                recyclerView.setAdapter(adapter);
-
-                // Si necesitas eliminar TODOS los espacios adicionales
-                recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
                     @Override
-                    public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                        outRect.set(5, 0, 0, 0); // Elimina cualquier espacio
+                    public void onSuccessRegisteringTarea() {
+                        //no se utiliza aquí
                     }
-                });
-                //divisor del recycler
-                Drawable dividerDrawable = ContextCompat.getDrawable(MainActivity.this, R.drawable.divider);
-                DividerItemDecoration divider = new DividerItemDecoration(MainActivity.this, DividerItemDecoration.VERTICAL);
-                divider.setDrawable(dividerDrawable);
-                recyclerView.addItemDecoration(divider);
-            }
 
-            @Override
-            public void onSuccessRegisteringTarea() {
+                    @Override
+                    public void onSuccessRemovingTarea() {
+                        //no se utiliza aquí
+                    }
 
-            }
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(MainActivity.this, "Algo ha salido mal...", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
 
-            @Override
-            public void onFailure(Exception e) {
-                System.out.println(e);
-            }
-        });
+    private void configurarRecyclerViewTareas(List<Tarea> tareas) {
+        TareaAdapter adapter = new TareaAdapter(tareas, this::manejarClickTarea);
+        RecyclerView recyclerView = findViewById(R.id.recyclerViewTareas);
 
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
+        configurarDecoracionesRecyclerView(recyclerView);
+    }
+
+    private void manejarClickTarea(Tarea tarea) {
+        ConexionBBDD.getInstance().borrarTarea(tarea, new TareaCallback() {
+                    @Override
+                    public void onSuccessRecoveringTareas(List<Tarea> listaTareas) {
+                        //no utilizado aquí
+                    }
+
+                    @Override
+                    public void onSuccessRegisteringTarea() {
+                        //no utilizado aquí
+                    }
+
+                    @Override
+                    public void onSuccessRemovingTarea() {
+                        Toast.makeText(MainActivity.this, "Tarea borrada correctamente", Toast.LENGTH_SHORT).show();
+                        cargarTareas();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(MainActivity.this, "Error al borrar tarea", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
     }
 
     private void cargarProductos() {
-        ConexionBBDD conn = ConexionBBDD.getInstance();
-        conn.recuperarProductosGrupo(sharedPreferences.getUserGroupID(), this, new ProductoCallback() {
-
-            @Override
-            public void onSuccessRecoveringProductos(List<Producto> listaProductos) {
-
-                ProductoAdapter adapter = new ProductoAdapter(listaProductos, new ProductoAdapter.OnProductoClickListener() {
+        ConexionBBDD.getInstance().recuperarProductosGrupo(sharedPreferences.getUserGroupID(), this, new ProductoCallback() {
                     @Override
-                    public void onProductoClick(Producto producto) {
-                        // Manejar el clic en la tarea
-                        Toast.makeText(MainActivity.this,"Producto seleccionada: " + producto.getNombre(), Toast.LENGTH_SHORT).show();
+                    public void onSuccessRecoveringProductos(List<Producto> listaProductos) {
+                        configurarRecyclerViewProductos(listaProductos);
                     }
-                });
-                //inflando el recyclerview y configurándolo
 
-                RecyclerView recyclerView = findViewById(R.id.recyclerViewProductos);
-                recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-                recyclerView.setAdapter(adapter);
-
-                // Si necesitas eliminar TODOS los espacios adicionales
-                recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
                     @Override
-                    public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                        outRect.set(5, 0, 0, 0); // Elimina cualquier espacio
+                    public void onSuccessRegisteringProducto() {
+                        // No utilizado aquí
                     }
-                });
-                //divisor del recycler
-                Drawable dividerDrawable = ContextCompat.getDrawable(MainActivity.this, R.drawable.divider);
-                DividerItemDecoration divider = new DividerItemDecoration(MainActivity.this, DividerItemDecoration.VERTICAL);
-                divider.setDrawable(dividerDrawable);
-                recyclerView.addItemDecoration(divider);
-            }
 
-            @Override
-            public void onSuccessRegisteringProducto() {
+                    @Override
+                    public void onSuccessRemovingProducto() {
+                        // No utilizado aquí
+                    }
 
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                System.out.println(e);
-            }
-        });
-
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e("ProductosError", "Error al cargar productos", e);
+                    }
+                }
+        );
     }
 
+    private void configurarRecyclerViewProductos(List<Producto> productos) {
+        ProductoAdapter adapter = new ProductoAdapter(productos, this::manejarClickProducto);
+        RecyclerView recyclerView = findViewById(R.id.recyclerViewProductos);
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
+        configurarDecoracionesRecyclerView(recyclerView);
+    }
+
+    private void manejarClickProducto(Producto producto) {
+        ConexionBBDD.getInstance().borrarProducto(producto, new ProductoCallback() {
+                    @Override
+                    public void onSuccessRecoveringProductos(List<Producto> listaProductos) {
+
+                    }
+
+                    @Override
+                    public void onSuccessRegisteringProducto() {
+                        // No utilizado aquí
+                    }
+
+                    @Override
+                    public void onSuccessRemovingProducto() {
+                        Toast.makeText(MainActivity.this, "Producto borrado correctamente", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+
+                    }
+                }
+        );
+    }
+
+    private void configurarDecoracionesRecyclerView(RecyclerView recyclerView) {
+        // Eliminar espacios adicionales
+        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                outRect.set(5, 0, 0, 0);
+            }
+        });
+    }
+
+    private void cargarResumenFinanciero() {
+        ConexionBBDD.getInstance().recuperarMovimientosGrupo(sharedPreferences.getUserGroupID(), this, new MovEcoCallback() {
+                    @Override
+                    public void onSuccessRecoveringMovimientos(List<MovimientoEconomico> listaMovimientos) {
+                        actualizarResumenFinanciero(listaMovimientos);
+                    }
+
+                    @Override
+                    public void onSuccessRegisteringMovimiento() {
+                        // No utilizado aquí
+                    }
+
+                    @Override
+                    public void onSuccessRemovingMovimiento() {
+                        // No utilizado aquí
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e("FinanzasError", "Error al cargar movimientos financieros", e);
+                        // Mostrar valores por defecto en caso de error
+                        tvBalanceMain.setText("Balance: 0€");
+                        tvUltimoMovimiento.setText("Último: -");
+                    }
+                }
+        );
+    }
+
+    // Añade este método para actualizar el resumen financiero
+    private void actualizarResumenFinanciero(List<MovimientoEconomico> listaMovimientos) {
+        float totalIngresos = 0;
+        float totalGastos = 0;
+        MovimientoEconomico ultimoMovimiento = null;
+
+        // Calcular totales y encontrar último movimiento
+        for (MovimientoEconomico mov : listaMovimientos) {
+            if (mov.getTipo().equals("Ingreso")) {
+                totalIngresos += (float) mov.getValor();
+            } else if (mov.getTipo().equals("Gasto")) {
+                totalGastos += (float) mov.getValor();
+            }
+
+            // Asumir que el último en la lista es el más reciente
+            // Si tienes fecha, puedes comparar aquí
+            ultimoMovimiento = mov;
+        }
+
+        // Calcular balance
+        double balance = totalIngresos - totalGastos;
+
+        // Actualizar TextView del balance con formato
+        tvBalanceMain.setText(String.format("Balance: %.2f€", balance));
+
+        // Aplicar color según el balance
+        aplicarColorBalance(balance);
+
+        // Actualizar último movimiento
+        if (ultimoMovimiento != null) {
+            String signo = ultimoMovimiento.getTipo().equals("Ingreso") ? "+" : "-";
+            tvUltimoMovimiento.setText(String.format("Último: %s%.2f€ (%s)",
+                    signo, ultimoMovimiento.getValor(), ultimoMovimiento.getConcepto()));
+        } else {
+            tvUltimoMovimiento.setText("Último: -");
+        }
+    }
+
+    // Añade este método para aplicar colores según el balance
+    private void aplicarColorBalance(double balance) {
+        int color;
+
+        if (balance < 0) {
+            // Balance negativo: rojo
+            color = ContextCompat.getColor(this, R.color.rojo_balance_negativo);
+        } else if (balance >= 0 && balance <= 50) {
+            // Balance cercano a 0 (entre 0 y 50): naranja
+            color = ContextCompat.getColor(this, R.color.naranja_balance_neutral);
+        } else {
+            // Balance positivo y lejano de 0: verde
+            color = ContextCompat.getColor(this, R.color.verde_balance_positivo);
+        }
+
+        tvBalanceMain.setTextColor(color);
+    }
+
+    // Opcional: Método para refrescar el resumen cuando sea necesario
+    public void refrescarResumenFinanciero() {
+        cargarResumenFinanciero();
+    }
 }

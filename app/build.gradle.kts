@@ -46,7 +46,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth-ktx")
 
-    // ZXing para generar códigos QR
+    //dependencias de ZXing para generar códigos QR
     implementation ("com.google.zxing:core:3.5.2")
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
 
@@ -58,6 +58,8 @@ dependencies {
 
     //dependencias del gráfico piechart
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+
     implementation(libs.firebase.firestore)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)

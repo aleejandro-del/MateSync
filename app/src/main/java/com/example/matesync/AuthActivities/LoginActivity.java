@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,18 +14,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.matesync.AppActivities.GrupoDomActivity;
+import com.example.matesync.AppActivities.AccederGrupoDomActivity;
 import com.example.matesync.AppActivities.MainActivity;
-import com.example.matesync.BaseDatosController.ConexionBBDD;
+import com.example.matesync.ConexionBBDD.ConexionBBDD;
 import com.example.matesync.Callbacks.FirestoreUserCallback;
 import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.R;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
-    private EditText loginEmail;
-    private EditText loginPassword;
-    private Button loginButton, goRegisterButton;
+    private EditText loginEmail, loginPassword;
+    private MaterialButton loginButton, goRegisterButton;
     private TextView goRecoverPassword;
     private boolean estaEnGrupo = false;
     SharedPreferencesManager shared;
@@ -103,7 +102,7 @@ public class LoginActivity extends AppCompatActivity {
                             shared.setUserUID(userUID);
 
                             // Obtener datos adicionales de Firestore
-                            conn.getUserBBDDdata(userUID, new FirestoreUserCallback() {
+                            conn.getUserBBDDdata(userUID, this, new FirestoreUserCallback() {
                                 @Override
                                 public void onCallback(String nombreUser, String email, boolean isAdmin, String grupoID, String nombreGrupo) {
                                     if (nombreUser != null && !nombreUser.isEmpty()) {
@@ -111,6 +110,7 @@ public class LoginActivity extends AppCompatActivity {
                                         shared.setUserGroup(grupoID);
                                         shared.setIsAdmin(isAdmin);
                                         shared.setNombreGrupo(nombreGrupo);
+
                                         Log.d("LoginFlow", "Datos completos obtenidos:");
                                         Log.d("LoginFlow", "Nombre: " + nombreUser);
                                         Log.d("LoginFlow", "GrupoID: " + grupoID);
@@ -124,7 +124,7 @@ public class LoginActivity extends AppCompatActivity {
                                             startActivity(intent);
                                             finish();
                                         } else {
-                                            Intent intent = new Intent(LoginActivity.this, GrupoDomActivity.class);
+                                            Intent intent = new Intent(LoginActivity.this, AccederGrupoDomActivity.class);
                                             startActivity(intent);
                                             finish();
                                         }

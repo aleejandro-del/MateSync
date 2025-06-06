@@ -4,3 +4,4 @@ package com.example.matesync.Callbacks;
 public interface FirestoreUserCallback {
     void onCallback(String nombreUser, String email, boolean isAdmin, String grupoID, String nombreGrupo);
 }
+

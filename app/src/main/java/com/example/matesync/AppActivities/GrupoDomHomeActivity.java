@@ -1,15 +1,11 @@
 package com.example.matesync.AppActivities;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -19,16 +15,14 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.matesync.AuthActivities.LoginActivity;
-import com.example.matesync.BaseDatosController.ConexionBBDD;
+import com.example.matesync.ConexionBBDD.ConexionBBDD;
+import com.example.matesync.Callbacks.AuthCallback;
 import com.example.matesync.Callbacks.MiembrosCallback;
 import com.example.matesync.Manager.MenuLateralManager;
 import com.example.matesync.Manager.QRManager;
@@ -36,12 +30,10 @@ import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.Modelo.Usuario;
 import com.example.matesync.Adapters.UsuarioAdapter;
 import com.example.matesync.R;
-import com.google.firebase.firestore.FieldValue;
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class GrupoDomHomeActivity extends AppCompatActivity {
     private MenuLateralManager navManager;
@@ -53,7 +45,6 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
     private RecyclerView recyclerViewMiembros;
     private UsuarioAdapter usuarioAdapter;
     private List<Usuario> listaUsuarios;
-
     // Constantes para opciones de gestión
     private static final String PROMOTE_TO_ADMIN = "Hacer Administrador";
     private static final String DEMOTE_FROM_ADMIN = "Quitar Administrador";
@@ -69,18 +60,16 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
         initializeComponents();
+        cargarUsuarios();
         setupToolbar();
         setupQRClickListener();
         setupRecyclerView();
-
-        cargarCodigoInvitacion();
-        cargarUsuarios();
     }
 
     private void initializeComponents() {
         sharedPreferences = new SharedPreferencesManager(this);
+        codigoInvitacionGrupo = sharedPreferences.getICodInv();
         ibQR = findViewById(R.id.ibQR);
         ibShare = findViewById(R.id.ibShare);
         ibShare.setOnClickListener(view -> compartirCodigoInvitacion());
@@ -88,18 +77,10 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
         tvNombreGrupo = findViewById(R.id.tvNombreGrupo);
         tvCod = findViewById(R.id.etCodigo);
         recyclerViewMiembros = findViewById(R.id.recyclerViewMiembros);
-        btGestionarUser = recyclerViewMiembros.findViewById(R.id.btGestionarUser);
-        btGestionarUser.setOnClickListener(v -> {
-            if (sharedPreferences.getIsAdmin()) {
-                mostrarDialogoSeleccionUsuario();
-            } else {
-                Toast.makeText(GrupoDomHomeActivity.this,
-                        "Solo los administradores pueden gestionar usuarios",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+
         tvNombreGrupo.setText(sharedPreferences.getNombreGrupo());
         tvCod.setEnabled(false);
+        tvCod.setText(codigoInvitacionGrupo);
     }
 
     private void setupToolbar() {
@@ -130,10 +111,6 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
     private void setupRecyclerView() {
         recyclerViewMiembros.setLayoutManager(new LinearLayoutManager(this));
 
-        Drawable dividerDrawable = ContextCompat.getDrawable(this, R.drawable.divider);
-        DividerItemDecoration divider = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
-        divider.setDrawable(dividerDrawable);
-        recyclerViewMiembros.addItemDecoration(divider);
 
         recyclerViewMiembros.addItemDecoration(new RecyclerView.ItemDecoration() {
             @Override
@@ -143,36 +120,6 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
         });
     }
 
-    private void cargarCodigoInvitacion() {
-        String grupoId = sharedPreferences.getUserGroupID();
-
-        if (grupoId == null || grupoId.isEmpty()) {
-            Toast.makeText(this, "Error: No se encontró información del grupo", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        FirebaseFirestore.getInstance()
-                .collection("gruposDomesticos")
-                .document(grupoId)
-                .get()
-                .addOnSuccessListener(document -> {
-                    if (document.exists()) {
-                        codigoInvitacionGrupo = document.getString("codigoInvitacion");
-                        tvCod.setText(codigoInvitacionGrupo);
-
-                        if (codigoInvitacionGrupo == null || codigoInvitacionGrupo.isEmpty()) {
-                            Log.w("QR_CODE", "El código de invitación está vacío en Firebase");
-                            Toast.makeText(this, "No se encontró código de invitación para este grupo", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(this, "No se encontró información del grupo", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("QR_CODE", "Error al cargar código de invitación", e);
-                    Toast.makeText(this, "Error al cargar información del grupo", Toast.LENGTH_SHORT).show();
-                });
-    }
 
     private void mostrarCodigoQR() {
         try {
@@ -225,14 +172,20 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
             public void onRecoverMiembrosSuccess(List<Usuario> listaUsuarios) {
                 GrupoDomHomeActivity.this.listaUsuarios = listaUsuarios;
 
-                usuarioAdapter = new UsuarioAdapter(listaUsuarios, usuario -> {
-                    if (sharedPreferences.getIsAdmin()) {
-                        mostrarOpcionesRol(usuario);
+                usuarioAdapter = new UsuarioAdapter(listaUsuarios, new UsuarioAdapter.OnUsuarioClickListener() {
+                    @Override
+                    public void onGestionarUsuarioClick(Usuario usuario) {
+                        if (sharedPreferences.getIsAdmin()) {
+                            mostrarOpcionesRol(usuario);
+                        } else {
+                            Toast.makeText(GrupoDomHomeActivity.this,
+                                    "Solo los administradores pueden gestionar usuarios",
+                                    Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
+
                 recyclerViewMiembros.setAdapter(usuarioAdapter);
-
-
             }
 
             @Override
@@ -244,26 +197,6 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
         });
     }
 
-    private void mostrarDialogoSeleccionUsuario() {
-        if (listaUsuarios == null || listaUsuarios.isEmpty()) {
-            Toast.makeText(this, "No hay usuarios para gestionar", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String[] nombresUsuarios = new String[listaUsuarios.size()];
-        for (int i = 0; i < listaUsuarios.size(); i++) {
-            nombresUsuarios[i] = listaUsuarios.get(i).getNombre();
-        }
-
-        new AlertDialog.Builder(this)
-                .setTitle("Seleccionar usuario a gestionar")
-                .setItems(nombresUsuarios, (dialog, which) -> {
-                    Usuario usuarioSeleccionado = listaUsuarios.get(which);
-                    mostrarOpcionesRol(usuarioSeleccionado);
-                })
-                .setNegativeButton("Cancelar", null)
-                .show();
-    }
 
     private void mostrarOpcionesRol(Usuario usuario) {
         if (usuario.getEmail().equals(sharedPreferences.getUserEmail())) {
@@ -333,33 +266,20 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
     }
 
     private void expulsarUsuario(Usuario usuario) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String grupoId = sharedPreferences.getUserGroupID();
+       ConexionBBDD conn = ConexionBBDD.getInstance();
+       conn.borrarUsuarioDeGrupo(usuario.getGrupoID(), usuario.getUserID(), this, new AuthCallback() {
+           @Override
+           public void onSuccess() {
+               Toast.makeText(GrupoDomHomeActivity.this, usuario.getNombre() + " ha sido expulsado", Toast.LENGTH_SHORT).show();
+           }
 
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("miembros." + usuario.getEmail(), FieldValue.delete());
-        updates.put("administradores." + usuario.getEmail(), FieldValue.delete());
+           @Override
+           public void onFailure(Exception exception) {
+               Toast.makeText(GrupoDomHomeActivity.this, "Error al expulsar usuario", Toast.LENGTH_SHORT).show();
+           }
+       });
 
-        db.collection("gruposDomesticos")
-                .document(grupoId)
-                .update(updates)
-                .addOnSuccessListener(aVoid -> {
-                    listaUsuarios.removeIf(u -> u.getEmail().equals(usuario.getEmail()));
-                    usuarioAdapter.notifyDataSetChanged();
-                    Toast.makeText(this, usuario.getNombre() + " ha sido expulsado", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("REMOVE_USER", "Error al expulsar usuario", e);
-                    Toast.makeText(this, "Error al expulsar usuario", Toast.LENGTH_SHORT).show();
-                });
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (codigoInvitacionGrupo == null || codigoInvitacionGrupo.isEmpty()) {
-            cargarCodigoInvitacion();
-        }
-        cargarUsuarios();
+
     }
 }

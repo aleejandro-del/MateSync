@@ -1,8 +1,10 @@
-package com.example.matesync.BaseDatosController;
+package com.example.matesync.ConexionBBDD;
 
 import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.example.matesync.AuthActivities.RegisterActivity;
 import com.example.matesync.Callbacks.AuthCallback;
@@ -12,6 +14,7 @@ import com.example.matesync.Callbacks.MiembrosCallback;
 import com.example.matesync.Callbacks.MovEcoCallback;
 import com.example.matesync.Callbacks.ProductoCallback;
 import com.example.matesync.Callbacks.TareaCallback;
+import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.Modelo.GrupoDomestico;
 import com.example.matesync.Modelo.MovimientoEconomico;
 import com.example.matesync.Modelo.Producto;
@@ -63,7 +66,7 @@ public class ConexionBBDD {
         return auth;
     }
 
-    //método para registrar usuario
+    //método para registrar usuario en Firestore
     public void registerUser(String email, String nombre, String password, RegisterActivity context, AuthCallback callback) {
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
@@ -92,22 +95,22 @@ public class ConexionBBDD {
                 });
     }
 
-    //método para recuperar datos de la BBDD de un user mediante su UID
-    public void getUserBBDDdata(String uid, FirestoreUserCallback callback) {
-        DocumentReference doc = db.collection("usuarios").document(uid);
+    public void getUserBBDDdata(String uid, Context context, FirestoreUserCallback callback) {
+        DocumentReference userDoc = db.collection("usuarios").document(uid);
 
-        doc.get().addOnCompleteListener(task -> {
+        userDoc.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                DocumentSnapshot documentSnapshot = task.getResult();
-                if (documentSnapshot.exists()) {
-                    String nombreUser = documentSnapshot.getString("nombre");
-                    String email = documentSnapshot.getString("email");
-                    String grupoUserID = documentSnapshot.getString("grupoID");
-                    Boolean adminObj = documentSnapshot.getBoolean("admin");
+                DocumentSnapshot userSnapshot = task.getResult();
+                if (userSnapshot.exists()) {
+                    String nombreUser = userSnapshot.getString("nombre");
+                    String email = userSnapshot.getString("email");
+                    String grupoUserID = userSnapshot.getString("grupoID");
+                    Boolean adminObj = userSnapshot.getBoolean("admin");
                     boolean isAdmin = adminObj != null ? adminObj : false;
 
-                    // Consulta adicional para obtener el nombre del grupo
+                    // Si el usuario pertenece a un grupo
                     if (grupoUserID != null && !grupoUserID.isEmpty()) {
+                        // Consulta para obtener los datos del grupo
                         DocumentReference grupoDoc = db.collection("gruposDomesticos").document(grupoUserID);
                         grupoDoc.get().addOnCompleteListener(grupoTask -> {
                             if (grupoTask.isSuccessful()) {
@@ -115,18 +118,31 @@ public class ConexionBBDD {
                                 String nombreGrupo = grupoSnapshot.exists() ?
                                         grupoSnapshot.getString("nombreGrupo") : null;
 
+                                // Obtener el código de invitación del grupo
+                                String codigoInvitacion = grupoSnapshot.exists() ?
+                                        grupoSnapshot.getString("codigoInvitacion") : null;
+
+                                // Almacenar el código de invitación en SharedPreferences si existe
+                                if (codigoInvitacion != null) {
+                                    SharedPreferencesManager shared = new SharedPreferencesManager(context);
+                                    shared.setCodigoInvitacion(codigoInvitacion);
+                                }
+
                                 callback.onCallback(nombreUser, email, isAdmin, grupoUserID, nombreGrupo);
                             } else {
                                 callback.onCallback(nombreUser, email, isAdmin, grupoUserID, null);
                             }
                         });
                     } else {
+                        // Usuario no está en ningún grupo
                         callback.onCallback(nombreUser, email, isAdmin, grupoUserID, null);
                     }
                 } else {
+                    // Usuario no existe en la base de datos
                     callback.onCallback(null, null, false, null, null);
                 }
             } else {
+                // Error al obtener datos del usuario
                 callback.onCallback(null, null, false, null, null);
             }
         });
@@ -153,19 +169,7 @@ public class ConexionBBDD {
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Firestore", "Elemento añadido al array correctamente");
 
-                    // También añadir el usuario a la subcolección de usuarios del grupo
-                    db.collection("gruposDomesticos").document(grupoID)
-                            .collection("usuarios").document(user.getUserID())
-                            .set(user)
-                            .addOnSuccessListener(aVoid2 -> {
-                                Toast.makeText(context, "Actualización exitosa", Toast.LENGTH_SHORT).show();
-                                // Actualizar el grupoID en la colección principal de usuarios
-                                FirebaseFirestore.getInstance().collection("usuarios").document(user.getUserID()).update("grupoID", grupoID);
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e("Firestore", "Error al añadir usuario a subcolección", e);
-                                Toast.makeText(context, "Error al actualizar: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            });
+
                 })
                 .addOnFailureListener(e -> {
                     Log.e("Firestore", "Error al añadir elemento", e);
@@ -186,7 +190,8 @@ public class ConexionBBDD {
                             DocumentSnapshot document = querySnapshot.getDocuments().get(0);
                             String grupoId = document.getId();
                             String nombreGrupo = document.getString("nombreGrupo");
-                            callback.onCodigoValido(grupoId, nombreGrupo);
+                            String codigoInvitacionGrupo = document.getString("codigoInvitacion");
+                            callback.onCodigoValido(codigoInvitacionGrupo, grupoId, nombreGrupo);
                         } else {
                             callback.onCodigoNoValido();
                         }
@@ -197,14 +202,12 @@ public class ConexionBBDD {
     }
 
     //método para registrar una tarea en la BBDD (ahora como subcolección)
-    public void registrarTareaBBDD(Tarea tarea, Context context, TareaCallback callback) {
+    public void registrarTareaBBDD(Tarea tarea, TareaCallback callback) {
         String grupoID = tarea.getGrupoID();
         CollectionReference tareasRef = db.collection("gruposDomesticos").document(grupoID).collection("tareas");
         String tareaID = tareasRef.document().getId();
         tarea.setTareaID(tareaID);
-        tareasRef.document(tareaID).set(tarea)
-                .addOnSuccessListener(aVoid -> callback.onSuccessRegisteringTarea())
-                .addOnFailureListener(e -> callback.onFailure(e));
+        tareasRef.document(tareaID).set(tarea).addOnSuccessListener(aVoid -> callback.onSuccessRegisteringTarea()).addOnFailureListener(e -> callback.onFailure(e));
     }
 
     //método para registrar un producto en la BBDD (ahora como subcolección)
@@ -218,7 +221,7 @@ public class ConexionBBDD {
                 .addOnFailureListener(e -> callback.onFailure(e));
     }
 
-    //método para registrar un movimiento económico en la BBDD (ahora como subcolección)
+    //método para registrar un movimiento económico en la BBDD
     public void registrarMovEcoBBDD(MovimientoEconomico movimientoEconomico, Context context, MovEcoCallback callback) {
         String grupoID = movimientoEconomico.getGrupoID();
         CollectionReference movimientosRef = db.collection("gruposDomesticos").document(grupoID).collection("movimientosEconomicos");
@@ -229,10 +232,10 @@ public class ConexionBBDD {
                 .addOnFailureListener(e -> callback.onFailure(e));
     }
 
-    //recuperar miembros del grupo de la BBDD para mostrarlos en su recycler view (con listener en tiempo real)
+    //recuperar miembros del grupo de la BBDD para mostrarlos en su recycler view
     public void recuperarMiembrosGrupo(String grupoID, Context context, MiembrosCallback callback) {
-        // Opción 1: Recuperar desde la subcolección de usuarios
-        ListenerRegistration listener = db.collection("gruposDomesticos").document(grupoID).collection("usuarios")
+        ListenerRegistration listener = db.collection("usuarios")
+                .whereEqualTo("grupoID", grupoID)  // Filtramos por el grupoID
                 .addSnapshotListener((querySnapshot, e) -> {
                     if (e != null) {
                         callback.onFailure(e);
@@ -240,7 +243,7 @@ public class ConexionBBDD {
                     }
 
                     List<Usuario> listaUsuarios = new ArrayList<>();
-                    if (querySnapshot != null) {
+                    if (querySnapshot != null && !querySnapshot.isEmpty()) {
                         for (QueryDocumentSnapshot document : querySnapshot) {
                             String userID = document.getString("userID");
                             String nombre = document.getString("nombre");
@@ -248,17 +251,23 @@ public class ConexionBBDD {
                             Boolean adminObj = document.getBoolean("admin");
                             boolean isAdmin = adminObj != null ? adminObj : false;
 
-                            Usuario usuario = new Usuario(userID, nombre, grupoID, isAdmin, email);
+                            Usuario usuario = new Usuario(
+                                    userID != null ? userID : document.getId(), // Usar document ID si userID es null
+                                    nombre,
+                                    grupoID,
+                                    isAdmin,
+                                    email
+                            );
                             listaUsuarios.add(usuario);
                         }
-                        callback.onRecoverMiembrosSuccess(listaUsuarios);
                     }
+                    callback.onRecoverMiembrosSuccess(listaUsuarios);
                 });
         activeListeners.add(listener);
     }
 
-    //método para recuperar las tareas de cada grupo doméstico desde la BBDD (con listener en tiempo real)
-    public void recuperarTareasGrupo(String grupoID, Context context, TareaCallback callback) {
+    //método para recuperar las tareas de cada grupo doméstico desde la BBDD
+    public void recuperarTareasGrupo(String grupoID, TareaCallback callback) {
         ListenerRegistration listener = db.collection("gruposDomesticos").document(grupoID).collection("tareas")
                 .addSnapshotListener((querySnapshot, e) -> {
                     if (e != null) {
@@ -283,7 +292,7 @@ public class ConexionBBDD {
         activeListeners.add(listener);
     }
 
-    //método para recuperar los productos de la lista de la compra de cada grupo doméstico desde la BBDD (con listener en tiempo real)
+    //método para recuperar los productos de la lista de la compra de cada grupo doméstico desde la BBDD
     public void recuperarProductosGrupo(String grupoID, Context context, ProductoCallback callback) {
         ListenerRegistration listener = db.collection("gruposDomesticos").document(grupoID).collection("productos")
                 .addSnapshotListener((querySnapshot, e) -> {
@@ -380,4 +389,107 @@ public class ConexionBBDD {
         activeListeners.add(listener);
     }
 
+    // Método para expulsar/borrar un usuario de un grupo
+    public void borrarUsuarioDeGrupo(String grupoID, String userID, Context context, AuthCallback callback) {
+        // Primero obtener los datos del usuario para poder removerlo del array
+        db.collection("usuarios").document(userID)
+                .get()
+                .addOnSuccessListener(userDoc -> {
+                    if (userDoc.exists()) {
+                        // Crear objeto Usuario para remover del array
+                        String nombre = userDoc.getString("nombre");
+                        String email = userDoc.getString("email");
+                        Boolean adminObj = userDoc.getBoolean("admin");
+                        boolean isAdmin = adminObj != null ? adminObj : false;
+
+                        Usuario usuario = new Usuario(userID, nombre, grupoID, isAdmin, email);
+
+                        // Remover usuario del array de miembros del grupo
+                        db.collection("gruposDomesticos")
+                                .document(grupoID)
+                                .update("miembros", FieldValue.arrayRemove(usuario))
+                                .addOnSuccessListener(aVoid -> {
+                                    // Borrar usuario de la subcolección de usuarios del grupo
+                                    db.collection("gruposDomesticos").document(grupoID)
+                                            .collection("usuarios").document(userID)
+                                            .delete()
+                                            .addOnSuccessListener(aVoid2 -> {
+                                                // Actualizar el usuario principal removiendo el grupoID
+                                                db.collection("usuarios").document(userID)
+                                                        .update("grupoID", "", "admin", false)
+                                                        .addOnSuccessListener(aVoid3 -> {
+                                                            Log.d("Firestore", "Usuario expulsado correctamente del grupo");
+                                                            Toast.makeText(context, "Usuario expulsado del grupo", Toast.LENGTH_SHORT).show();
+                                                            callback.onSuccess();
+                                                        })
+                                                        .addOnFailureListener(e -> {
+                                                            Log.e("Firestore", "Error al actualizar usuario principal", e);
+                                                            callback.onFailure(e);
+                                                        });
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Log.e("Firestore", "Error al borrar usuario de subcolección", e);
+                                                callback.onFailure(e);
+                                            });
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("Firestore", "Error al remover usuario del array", e);
+                                    callback.onFailure(e);
+                                });
+                    } else {
+                        Log.e("Firestore", "Usuario no encontrado");
+                        callback.onFailure(new Exception("Usuario no encontrado"));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error al obtener datos del usuario", e);
+                    callback.onFailure(e);
+                });
+    }
+
+    // Método para borrar una tarea
+    public void borrarTarea(@NonNull Tarea tarea, TareaCallback callback) {
+        db.collection("gruposDomesticos").document(tarea.getGrupoID())
+                .collection("tareas").document(tarea.getTareaID())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("Firestore", "Tarea borrada correctamente");
+                    callback.onSuccessRemovingTarea();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error al borrar tarea", e);
+                    callback.onFailure(e);
+                });
+    }
+
+    // Método para borrar un producto
+    public void borrarProducto(@NonNull Producto producto, ProductoCallback callback) {
+        db.collection("gruposDomesticos").document(producto.getGrupoID())
+                .collection("productos").document(producto.getProductoID())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("Firestore", "Producto borrado correctamente");
+                    callback.onSuccessRemovingProducto();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error al borrar producto", e);
+                    callback.onFailure(e);
+                });
+    }
+
+    // Método para borrar un movimiento económico
+    public void borrarMovimientoEconomico(@NonNull MovimientoEconomico movimientoEconomico, Context context, MovEcoCallback callback) {
+        db.collection("gruposDomesticos").document(movimientoEconomico.getGrupoID())
+                .collection("movimientosEconomicos").document(movimientoEconomico.getMovID())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("Firestore", "Movimiento económico borrado correctamente");
+                    callback.onSuccessRemovingMovimiento();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error al borrar movimiento económico", e);
+                    Toast.makeText(context, "Error al eliminar movimiento: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    callback.onFailure(e);
+                });
+    }
 }

@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -13,18 +12,15 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.matesync.BaseDatosController.ConexionBBDD;
+import com.example.matesync.ConexionBBDD.ConexionBBDD;
 import com.example.matesync.Callbacks.AuthCallback;
 import com.example.matesync.Manager.SharedPreferencesManager;
 import com.example.matesync.R;
+import com.google.android.material.button.MaterialButton;
 
 public class RegisterActivity extends AppCompatActivity {
-    private EditText etNombre;
-    private EditText etEmail;
-    private EditText etPassword;
-    private EditText etRepeatPassword;
-    private Button registerButton;
-    private Button registerGoLoginButton;
+    private EditText etNombre, etEmail, etPassword, etRepeatPassword;
+    private MaterialButton registerButton, registerGoLoginButton;
     SharedPreferencesManager shared ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {

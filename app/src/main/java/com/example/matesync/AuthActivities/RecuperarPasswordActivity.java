@@ -17,11 +17,12 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.matesync.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class RecuperarPasswordActivity extends AppCompatActivity {
     FirebaseAuth auth;
-    Button enviarCorreoRecBt;
+    MaterialButton enviarCorreoRecBt, volverButton;
     EditText emailRecuperacionEditText;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +38,7 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
 
         enviarCorreoRecBt = findViewById(R.id.enviarCorreoRecBt);
         emailRecuperacionEditText = findViewById(R.id.emailRecuperacionEditText);
+        volverButton = findViewById(R.id.volverButton);
         //proceso de envío de email de cambio de contraseña
         enviarCorreoRecBt.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,6 +61,14 @@ public class RecuperarPasswordActivity extends AppCompatActivity {
                         }
                     });
                 }
+            }
+        });
+
+
+        volverButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                volverLoginActivity(v);
             }
         });
     }

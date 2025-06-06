@@ -1,31 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:paddingVertical="4dp">
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp"
+    android:backgroundTint="@color/material_dynamic_primary95"
+    app:rippleColor="@color/material_dynamic_primary90">
 
-    <TextView
-        android:id="@+id/tvConcepto"
-        android:layout_width="86dp"
-        android:layout_height="46dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:textSize="15sp"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:minHeight="72dp">
 
-        android:text="TextView"
-        android:textAlignment="center" />
+        <!-- Icono de tipo de movimiento -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            android:backgroundTint="@color/material_dynamic_primary90">
 
-    <TextView
-        android:id="@+id/tvValor"
-        android:layout_width="224dp"
-        android:layout_height="46dp"
-        android:gravity="center"
-        android:textAlignment="center"
-        android:layout_weight="1"
-        android:textSize="15sp"
+            <ImageView
+                android:id="@+id/ivTipoMovimiento"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/movimientos_svg"
+                app:tint="@color/material_dynamic_primary30" />
 
-        android:text="TextView" />
+        </com.google.android.material.card.MaterialCardView>
 
-</LinearLayout>
+        <!-- Contenido principal -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Nombre/Concepto -->
+            <TextView
+                android:id="@+id/tvConcepto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nombre del movimiento"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/material_dynamic_neutral20"
+                android:layout_marginBottom="4dp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <!-- Información adicional (fecha, categoría, etc.) -->
+            <TextView
+                android:id="@+id/tvDetalles"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Detalles del movimiento"
+                android:textSize="12sp"
+                android:textColor="@color/material_dynamic_neutral50"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+
+        <!-- Sección derecha: Valor y CheckBox -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end|center_vertical"
+            android:layout_marginStart="16dp">
+
+            <!-- Valor -->
+            <TextView
+                android:id="@+id/tvValor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="€0.00"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/material_dynamic_primary20"
+                android:layout_marginBottom="8dp"
+                android:minWidth="80dp"
+                android:gravity="end" />
+
+            <!-- CheckBox Material Design 3 -->
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/cbMovEco"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/material_dynamic_secondary40"
+                app:buttonTint="@color/material_dynamic_secondary40" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

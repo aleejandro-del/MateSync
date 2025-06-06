@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/material_dynamic_neutral80"
     tools:context=".AppActivities.ListaCompraActivity">
 
     <androidx.drawerlayout.widget.DrawerLayout
@@ -12,206 +14,335 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Contenido principal -->
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="0dp"
-                android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
-                android:theme="?attr/actionBarTheme"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+            <!-- ==================== APP BAR CON MATERIAL DESIGN 3 ==================== -->
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appBarLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/material_dynamic_primary90"
+                app:elevation="0dp">
 
-            <TextView
-                android:id="@+id/tvFinanzas"
+                <com.google.android.material.appbar.MaterialToolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:background="@color/material_dynamic_primary90"
+                    app:titleTextColor="@color/material_dynamic_primary10"
+                    app:navigationIconTint="@color/material_dynamic_primary10" />
+
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <!-- ==================== CONTENIDO PRINCIPAL CON SCROLL ==================== -->
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- ==================== SECCIÓN FINANZAS DEL GRUPO ==================== -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="20dp"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        android:backgroundTint="@color/material_dynamic_primary95">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="24dp">
+
+                            <!-- Header de Finanzas -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="20dp">
+
+                                <ImageView
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:src="@drawable/finanzas_logo"
+                                    app:tint="@color/material_dynamic_primary30"
+                                    android:layout_marginEnd="16dp" />
+
+                                <TextView
+                                    android:id="@+id/tvFinanzas"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Finanzas del Grupo"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/material_dynamic_primary20" />
+
+                            </LinearLayout>
+
+                            <!-- Gráfico de Pastel -->
+                            <com.github.mikephil.charting.charts.PieChart
+                                android:id="@+id/pieChart"
+                                android:layout_width="match_parent"
+                                android:layout_height="280dp"
+                                android:layout_marginBottom="16dp" />
+
+                            <!-- Tarjetas de Resumen -->
+                            <LinearLayout
+                                android:id="@+id/summaryCards"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:weightSum="3">
+
+                                <!-- Tarjeta Ingresos -->
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_margin="4dp"
+                                    app:cardCornerRadius="16dp"
+                                    app:cardElevation="0dp"
+                                    app:strokeWidth="1dp"
+                                    app:strokeColor="@color/material_dynamic_tertiary70"
+                                    android:backgroundTint="@color/material_dynamic_tertiary99">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="vertical"
+                                        android:padding="16dp"
+                                        android:gravity="center">
+
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Ingresos"
+                                            android:textSize="12sp"
+                                            android:textColor="@color/material_dynamic_tertiary40"
+                                            android:layout_marginBottom="4dp" />
+
+                                        <TextView
+                                            android:id="@+id/tvTotalIngresos"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="0€"
+                                            android:textSize="16sp"
+                                            android:textStyle="bold"
+                                            android:textColor="@color/material_dynamic_tertiary20" />
+
+                                    </LinearLayout>
+
+                                </com.google.android.material.card.MaterialCardView>
+
+                                <!-- Tarjeta Gastos -->
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_margin="4dp"
+                                    app:cardCornerRadius="16dp"
+                                    app:cardElevation="0dp"
+                                    app:strokeWidth="1dp"
+                                    app:strokeColor="@color/material_dynamic_tertiary70"
+                                    android:backgroundTint="@color/material_dynamic_tertiary99">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="vertical"
+                                        android:padding="16dp"
+                                        android:gravity="center">
+
+
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Gastos"
+                                            android:textSize="12sp"
+                                            android:textColor="@color/material_dynamic_secondary40"
+                                            android:layout_marginBottom="4dp" />
+
+                                        <TextView
+                                            android:id="@+id/tvTotalGastos"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="0€"
+                                            android:textSize="16sp"
+                                            android:textStyle="bold"
+                                            />
+
+                                    </LinearLayout>
+
+                                </com.google.android.material.card.MaterialCardView>
+
+                                <!-- Tarjeta Balance -->
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_margin="4dp"
+                                    app:cardCornerRadius="16dp"
+                                    app:cardElevation="0dp"
+                                    app:strokeWidth="1dp"
+                                    app:strokeColor="@color/material_dynamic_secondary70"
+                                    android:backgroundTint="@color/material_dynamic_tertiary99">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="vertical"
+                                        android:padding="16dp"
+                                        android:gravity="center">
+
+
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Balance"
+                                            android:textSize="12sp"
+                                            android:textColor="@color/material_dynamic_secondary40"
+                                            android:layout_marginBottom="4dp" />
+
+                                        <TextView
+                                            android:id="@+id/tvBalance"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="0€"
+                                            android:textSize="16sp"
+                                            android:textStyle="bold"
+                                            android:textColor="@color/material_dynamic_secondary20" />
+
+                                    </LinearLayout>
+
+                                </com.google.android.material.card.MaterialCardView>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- ==================== SECCIÓN MOVIMIENTOS ==================== -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardContainerMovimientos"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="80dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="2dp"
+                        app:strokeWidth="0dp"
+                        android:backgroundTint="@color/material_dynamic_neutral99">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <!-- Header de Movimientos -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:padding="20dp"
+                                android:paddingBottom="12dp">
+
+                                <ImageView
+                                    android:layout_width="28dp"
+                                    android:layout_height="28dp"
+                                    android:src="@drawable/movimientos_svg"
+                                    app:tint="@color/material_dynamic_secondary30"
+                                    android:layout_marginEnd="12dp" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:id="@+id/tvMovimientos"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Movimientos"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/material_dynamic_neutral20" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Historial de transacciones"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/material_dynamic_neutral50" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <!-- RecyclerView Movimientos -->
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvMovimientos"
+                                android:layout_width="match_parent"
+                                android:layout_height="450dp"
+                                android:clipToPadding="false"
+                                android:paddingHorizontal="12dp"
+                                android:paddingBottom="16dp"
+                                android:scrollbars="vertical"
+                                android:overScrollMode="never" />
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+            </androidx.core.widget.NestedScrollView>
+
+            <!-- ==================== BOTÓN FLOTANTE ==================== -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btAddMovimiento"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Finanzas del Grupo"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.072"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.099" />
+                android:layout_gravity="bottom|end"
+                android:layout_margin="24dp"
+                android:contentDescription="Añadir movimiento"
+                app:srcCompat="@drawable/plus"
+                android:backgroundTint="@color/material_dynamic_primary40"
+                app:tint="@color/material_dynamic_primary100"
+                app:elevation="6dp" />
 
-            <com.github.mikephil.charting.charts.PieChart
-                android:id="@+id/pieChart"
-                android:layout_width="0dp"
-                android:layout_height="250dp"
-                android:layout_marginHorizontal="16dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.25"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.26" />
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-            <LinearLayout
-                android:id="@+id/summaryCards"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="8dp"
-                android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:weightSum="3"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="1.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/pieChart"
-                app:layout_constraintVertical_bias="0.022">
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="4dp"
-                    android:layout_weight="1"
-                    app:cardCornerRadius="8dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-
-                        <TextView
-                            android:layout_width="111dp"
-                            android:layout_height="20dp"
-                            android:text="Ingresos"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tvTotalIngresos"
-                            android:layout_width="111dp"
-                            android:layout_height="20dp"
-                            android:text="0€" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="4dp"
-                    android:layout_weight="1"
-                    app:cardCornerRadius="8dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-
-                        <TextView
-                            android:layout_width="111dp"
-                            android:layout_height="20dp"
-                            android:text="Gastos"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tvTotalGastos"
-                            android:layout_width="111dp"
-                            android:layout_height="20dp"
-                            android:text="0€" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="4dp"
-                    android:layout_weight="1"
-                    app:cardCornerRadius="8dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-
-                        <TextView
-                            android:layout_width="111dp"
-                            android:layout_height="20dp"
-                            android:text="Balance"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tvBalance"
-                            android:layout_width="111dp"
-                            android:layout_height="20dp"
-                            android:text="0€" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/tvMovimientos"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Movimientos"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.072"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.615" />
-
-            <!-- Lista de movimientos -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/materialCardView"
-                android:layout_width="370dp"
-                android:layout_height="270dp"
-                android:layout_margin="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="10dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.98"
-                app:strokeColor="@color/material_dynamic_neutral80"
-                app:strokeWidth="1dp">
-
-                <!-- RecyclerView dentro del CardView -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvMovimientos"
-                    android:layout_width="370dp"
-                    android:layout_height="270dp"
-                    android:scrollbars="vertical"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <!-- Botón flotante superpuesto -->
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/btAddMovimiento"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_margin="16dp"
-                    android:contentDescription="Añadir movimiento"
-                    app:srcCompat="@drawable/plus" />
-            </com.google.android.material.card.MaterialCardView>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <!-- Menú lateral -->
+        <!-- ==================== MENÚ LATERAL ==================== -->
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/nav_view"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="start"
+            android:background="@color/material_dynamic_neutral99"
             app:headerLayout="@layout/menu_header"
-            app:menu="@menu/menu_lateral" />
+            app:menu="@menu/menu_lateral"
+            app:itemTextColor="@color/material_dynamic_neutral20"
+            app:itemIconTint="@color/material_dynamic_neutral30" />
+
     </androidx.drawerlayout.widget.DrawerLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

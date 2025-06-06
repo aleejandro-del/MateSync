@@ -1,39 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp"
+    android:background="@color/material_dynamic_neutral99">
 
-    <!-- Nombre de la tarea -->
+    <!-- Header del diálogo -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="20dp">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/task_svg"
+            app:tint="@color/black"
+            android:layout_marginEnd="12dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nueva tarea"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/material_dynamic_neutral10" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Completa la información de la tarea"
+                android:textSize="14sp"
+                android:textColor="@color/material_dynamic_neutral40"
+                android:layout_marginTop="2dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Campo Nombre de la tarea -->
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilTaskName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Nombre de la tarea"
-       >
+        app:errorEnabled="true"
+        app:helperText="Campo obligatorio"
+        app:helperTextTextColor="@color/material_dynamic_neutral50"
+        app:boxStrokeColor="@color/material_dynamic_primary40"
+        app:hintTextColor="@color/material_dynamic_primary40"
+        app:startIconTint="@color/material_dynamic_primary40"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_marginBottom="16dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etTaskName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textCapWords"
-            android:maxLines="1" />
+            android:maxLines="1"
+            android:textColor="@color/material_dynamic_neutral10"
+            android:textSize="16sp" />
+
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Descripción -->
+    <!-- Campo Descripción -->
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilTaskDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Descripción"
-
-        android:layout_marginTop="8dp">
+        android:hint="Descripción (opcional)"
+        app:errorEnabled="true"
+        app:helperText="Ej: Detalles, pasos a seguir, recordatorios..."
+        app:helperTextTextColor="@color/material_dynamic_neutral50"
+        app:boxStrokeColor="@color/material_dynamic_primary40"
+        app:hintTextColor="@color/material_dynamic_primary40"
+        app:startIconTint="@color/material_dynamic_primary40"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_marginBottom="8dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etTaskDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
+            android:inputType="textCapSentences|textMultiLine"
             android:minLines="3"
-            android:maxLines="5" />
+            android:maxLines="5"
+            android:textColor="@color/material_dynamic_neutral10"
+            android:textSize="16sp" />
+
     </com.google.android.material.textfield.TextInputLayout>
+
 </LinearLayout>

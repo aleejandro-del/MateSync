@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/material_dynamic_neutral80"
     tools:context=".AppActivities.GrupoDomHomeActivity">
 
     <androidx.drawerlayout.widget.DrawerLayout
@@ -12,165 +14,274 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Contenido principal -->
-        <FrameLayout
-            android:id="@+id/content_frame"
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appBarLayout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:background="@color/material_dynamic_primary90"
+                app:elevation="0dp">
 
-                <!-- Toolbar en la parte superior -->
-
-
-                <TextView
-                    android:id="@+id/tvMiembros"
-                    android:layout_width="113dp"
-                    android:layout_height="32dp"
-                    android:text="Miembros"
-                    android:textSize="24dp"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.053"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-
-                    app:layout_constraintVertical_bias="0.307" />
-
-                <androidx.appcompat.widget.Toolbar
+                <com.google.android.material.appbar.MaterialToolbar
                     android:id="@+id/toolbar"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/colorPrimary"
-                    android:theme="?attr/actionBarTheme"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:background="@color/material_dynamic_primary90"
+                    app:titleTextColor="@color/material_dynamic_primary10"
+                    app:navigationIconTint="@color/material_dynamic_primary10" />
 
+            </com.google.android.material.appbar.AppBarLayout>
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/materialCardView"
-                    android:layout_width="370dp"
-                    android:layout_height="450dp"
-                    android:layout_margin="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="10dp"
-
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.80"
-                    app:strokeColor="@color/material_dynamic_neutral80"
-                    app:strokeWidth="1dp">
-
-                    <!-- RecyclerView dentro del CardView -->
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerViewMiembros"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scrollbars="vertical"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="20dp"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        android:backgroundTint="@color/material_dynamic_primary95">
 
-                </com.google.android.material.card.MaterialCardView>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="24dp">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="16dp">
 
-                <TextView
-                    android:id="@+id/tvNombreGrupo"
-                    android:layout_width="325dp"
-                    android:layout_height="41dp"
-                    android:text="GRUPO DOMÉSTICO"
-                    android:textSize="24dp"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.175"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
+                                <ImageView
+                                    android:layout_width="40dp"
+                                    android:layout_height="40dp"
+                                    android:src="@drawable/grupodomestico_logo"
+                                    app:tint="@color/material_dynamic_primary30"
+                                    android:layout_marginEnd="16dp" />
 
-                    app:layout_constraintVertical_bias="0.111" />
+                                <TextView
+                                    android:id="@+id/tvNombreGrupo"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="GRUPO DOMÉSTICO"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/material_dynamic_primary20" />
 
-                <TextView
-                    android:id="@+id/textView5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Código de invitación"
-                    android:textSize="20dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.069"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.173" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
 
-                <EditText
-                    android:id="@+id/etCodigo"
-                    android:layout_width="249dp"
-                    android:layout_height="50dp"
-                    android:ems="10"
-                    android:inputType="text"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.092"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.208" />
+                                <TextView
+                                    android:id="@+id/textView5"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Código de invitación"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/material_dynamic_primary40"
+                                    android:layout_marginBottom="8dp" />
 
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guideline10"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_begin="15dp" />
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
 
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guideline11"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_begin="395dp" />
+                                    <com.google.android.material.textfield.TextInputLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:layout_marginEnd="8dp"
+                                        app:boxBackgroundMode="filled"
+                                        app:boxBackgroundColor="@color/material_dynamic_primary99"
+                                        app:boxCornerRadiusTopStart="12dp"
+                                        app:boxCornerRadiusTopEnd="12dp"
+                                        app:boxCornerRadiusBottomStart="12dp"
+                                        app:boxCornerRadiusBottomEnd="12dp"
+                                        app:boxStrokeWidth="0dp"
+                                        app:boxStrokeWidthFocused="2dp"
+                                        app:boxStrokeColor="@color/material_dynamic_primary40">
 
-                <ImageView
-                    android:id="@+id/ibQR"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.781"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.208"
-                    app:srcCompat="@drawable/qr_code" />
+                                        <com.google.android.material.textfield.TextInputEditText
+                                            android:id="@+id/etCodigo"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:inputType="text"
+                                            android:textColor="@color/black"
+                                            android:textSize="14sp"
+                                            android:hint="Código del grupo" />
 
-                <ImageView
-                    android:id="@+id/ibShare"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.944"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.208"
-                    app:srcCompat="@drawable/share_icon" />
+                                    </com.google.android.material.textfield.TextInputLayout>
+                                    <com.google.android.material.card.MaterialCardView
+                                        android:layout_width="48dp"
+                                        android:layout_height="48dp"
+                                        android:layout_marginEnd="8dp"
+                                        app:cardCornerRadius="12dp"
+                                        app:cardElevation="0dp"
+                                        app:strokeWidth="1dp"
+                                        app:strokeColor="@color/material_dynamic_primary70"
+                                        android:backgroundTint="@color/material_dynamic_primary99"
+                                        android:clickable="true"
+                                        android:focusable="true"
+                                        android:foreground="?attr/selectableItemBackground">
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </FrameLayout>
+                                        <ImageView
+                                            android:id="@+id/ibQR"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:layout_gravity="center"
+                                            android:src="@drawable/qr_code"
+                                            app:tint="@color/material_dynamic_primary30" />
 
-        <!-- Menú lateral -->
+                                    </com.google.android.material.card.MaterialCardView>
+
+                                    <com.google.android.material.card.MaterialCardView
+                                        android:layout_width="48dp"
+                                        android:layout_height="48dp"
+                                        app:cardCornerRadius="12dp"
+                                        app:cardElevation="0dp"
+                                        app:strokeWidth="1dp"
+                                        app:strokeColor="@color/material_dynamic_primary70"
+                                        android:backgroundTint="@color/material_dynamic_primary99"
+                                        android:clickable="true"
+                                        android:focusable="true"
+                                        android:foreground="?attr/selectableItemBackground">
+
+                                        <ImageView
+                                            android:id="@+id/ibShare"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:layout_gravity="center"
+                                            android:src="@drawable/share_icon"
+                                            app:tint="@color/material_dynamic_primary30" />
+
+                                    </com.google.android.material.card.MaterialCardView>
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- ==================== SECCIÓN MIEMBROS ==================== -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardContainerMiembros"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="80dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="2dp"
+                        app:strokeWidth="0dp"
+                        android:backgroundTint="@color/material_dynamic_neutral99">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <!-- Header de Miembros -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:padding="20dp"
+                                android:paddingBottom="12dp">
+
+                                <ImageView
+                                    android:layout_width="28dp"
+                                    android:layout_height="28dp"
+                                    android:src="@drawable/miembros_svg"
+                                    app:tint="@color/material_dynamic_secondary30"
+                                    android:layout_marginEnd="12dp" />
+
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:id="@+id/tvMiembros"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Miembros"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold"
+                                        android:textColor="@color/material_dynamic_neutral20" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Integrantes del grupo"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/material_dynamic_neutral50" />
+
+                                </LinearLayout>
+
+                                <!-- Indicador de número de miembros -->
+                                <com.google.android.material.card.MaterialCardView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    app:cardCornerRadius="12dp"
+                                    app:cardElevation="0dp"
+                                    android:backgroundTint="@color/material_dynamic_secondary90"/>
+
+                            </LinearLayout>
+
+                            <!-- RecyclerView Miembros -->
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/recyclerViewMiembros"
+                                android:layout_width="match_parent"
+                                android:layout_height="450dp"
+                                android:clipToPadding="false"
+                                android:paddingHorizontal="12dp"
+                                android:paddingBottom="16dp"
+                                android:scrollbars="vertical"
+                                android:overScrollMode="never" />
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+            </androidx.core.widget.NestedScrollView>
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        <!-- ==================== MENÚ LATERAL ==================== -->
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/nav_view"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="start"
+            android:background="@color/material_dynamic_neutral99"
             app:headerLayout="@layout/menu_header"
-            app:menu="@menu/menu_lateral" />
+            app:menu="@menu/menu_lateral"
+            app:itemTextColor="@color/material_dynamic_neutral20"
+            app:itemIconTint="@color/material_dynamic_neutral30" />
 
     </androidx.drawerlayout.widget.DrawerLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
