@@ -99,7 +99,7 @@ public class FinanzasActivity extends AppCompatActivity {
             }
         });
     }
-
+    //método que recupera los movimientos económicos del grupo mediante consulta a Firestore
     private void cargarMovimientos() {
         ConexionBBDD conn = ConexionBBDD.getInstance();
         conn.recuperarMovimientosGrupo(sharedPreferences.getUserGroupID(), this, new MovEcoCallback() {
@@ -126,17 +126,17 @@ public class FinanzasActivity extends AppCompatActivity {
         });
 
     }
-
+    //método para configurar el recyclerview de los movimientos económicos
     private void configurarRecyclerViewMovimientos(List<MovimientoEconomico> listaMovimientos) {
         RecyclerView recyclerView = findViewById(R.id.rvMovimientos);
 
-        // Si el adapter ya existe, solo actualizar los datos
+        //si el adapter ya existe, solo se actualizan los datos
         if (adapter == null) {
             adapter = new MovEcoAdapter(listaMovimientos, this::manejarClickMovimiento);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             recyclerView.setAdapter(adapter);
 
-            // Configuración de decoraciones - solo una vez
+            //configuro las líneas del recycler (decoración)
             recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
                 @Override
                 public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
@@ -144,13 +144,13 @@ public class FinanzasActivity extends AppCompatActivity {
                 }
             });
         } else {
-            // Solo actualizar los datos existentes
+            //solo actualizo los datos existentes
             adapter.updateMovimientos(listaMovimientos);
         }
     }
-
+    //método para manejar la pulsación larga sobre el checkbox de un movimiento económico
     private void manejarClickMovimiento(MovimientoEconomico movimiento) {
-        // Mostrar confirmación antes de eliminar
+        //mostrar dialog de confirmación antes de eliminar
         new AlertDialog.Builder(this)
                 .setTitle("Eliminar movimiento")
                 .setMessage("¿Estás seguro de que quieres eliminar este movimiento?")
@@ -172,6 +172,7 @@ public class FinanzasActivity extends AppCompatActivity {
                             runOnUiThread(() -> {
                                 Toast.makeText(FinanzasActivity.this, "Movimiento eliminado correctamente", Toast.LENGTH_SHORT).show();
                                 cargarMovimientos();
+                                setResult(RESULT_OK);
                             });
                         }
 
@@ -188,20 +189,20 @@ public class FinanzasActivity extends AppCompatActivity {
                 .show();
     }
 
-    // Método que crea el diálogo de creación de movimiento económico
+    //método que crea el diálogo de creación de movimiento económico
     private void crearDialogoCreacionMovimiento() {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.layout_dialogo_crear_movimiento_financiero, null);
 
         etMovConcepto = dialogView.findViewById(R.id.etMovConcepto);
         etMovCuantia = dialogView.findViewById(R.id.etMovCuantia);
 
-        // Obtener referencias a los radio buttons y cards
+        //obtener referencias a los radio buttons y cards
         MaterialRadioButton rbIngreso = dialogView.findViewById(R.id.rbIngreso);
         MaterialRadioButton rbGasto = dialogView.findViewById(R.id.rbGasto);
         MaterialCardView cardIngreso = dialogView.findViewById(R.id.cardIngreso);
         MaterialCardView cardGasto = dialogView.findViewById(R.id.cardGasto);
 
-        // Configurar listeners para las cards para que actúen como radio buttons
+        //configuro los listeners para las cards para que actúen como radio buttons
         cardIngreso.setOnClickListener(v -> {
             rbIngreso.setChecked(true);
             rbGasto.setChecked(false);
@@ -214,7 +215,7 @@ public class FinanzasActivity extends AppCompatActivity {
             actualizarEstiloCards(cardIngreso, cardGasto, false);
         });
 
-        // También configurar listeners para los radio buttons directamente
+        //también configuro los listeners para los radio buttons
         rbIngreso.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 rbGasto.setChecked(false);
@@ -228,7 +229,7 @@ public class FinanzasActivity extends AppCompatActivity {
                 actualizarEstiloCards(cardIngreso, cardGasto, false);
             }
         });
-
+        //empiezo a crear el diálogo para la creación de un movimiento económico
         AlertDialog.Builder builder = new AlertDialog.Builder(
                 new ContextThemeWrapper(this, android.R.style.Theme_DeviceDefault_Light_Dialog)
         );
@@ -272,6 +273,16 @@ public class FinanzasActivity extends AppCompatActivity {
                             public void onSuccessRegisteringMovimiento() {
                                 Toast.makeText(FinanzasActivity.this, "Movimiento registrado correctamente", Toast.LENGTH_SHORT).show();
                                 cargarMovimientos();
+
+                                String signo = "";
+                                if(signo.equals("Ingreso")){
+                                    signo = "+";
+                                }else if (signo.equals("Gasto")){
+                                    signo = "-";
+                                }
+                                MainActivity.tvUltimoMovimiento.setText(String.format("Último: %s%.2f€ (%s)",
+                                        signo, valor, concepto));
+                                setResult(RESULT_OK);
                             }
 
                             @Override
@@ -290,9 +301,10 @@ public class FinanzasActivity extends AppCompatActivity {
         });
 
         builder.create().show();
+
     }
 
-    // Método auxiliar para actualizar el estilo visual de las cards
+    // método auxiliar para actualizar el estilo visual de las cards
     private void actualizarEstiloCards(MaterialCardView cardIngreso, MaterialCardView cardGasto, boolean ingresoSeleccionado) {
         if (ingresoSeleccionado) {
             cardIngreso.setStrokeColor(ContextCompat.getColor(this, com.google.android.material.R.color.material_dynamic_primary40));
@@ -307,7 +319,7 @@ public class FinanzasActivity extends AppCompatActivity {
         }
     }
 
-    // Método para poblar el gráfico de tarta y los 3 campos numéricos que informan de las cifras totales referente a ingresos-gastos-balance
+    //método para poblar el gráfico de tarta y los 3 campos numéricos que informan de las cifras totales referente a ingresos-gastos-balance
     private void mostrarDatosFinancieros(List<MovimientoEconomico> listaMovimientos) {
         float totalIngresos = 0;
         float totalGastos = 0;

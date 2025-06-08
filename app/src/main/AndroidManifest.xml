@@ -21,12 +21,13 @@
         android:roundIcon="@mipmap/matesync"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:screenOrientation="portrait"
+
 
         tools:targetApi="31">
         <activity
             android:name=".AppActivities.FinanzasActivity"
             android:screenOrientation="portrait"
+
             android:exported="false" />
         <activity
             android:name=".AppActivities.ListaCompraActivity"
@@ -36,10 +37,7 @@
             android:name=".AppActivities.GrupoDomHomeActivity"
             android:exported="false"
             android:screenOrientation="portrait"
-            android:stateNotNeeded="true"
-            android:theme="@style/zxing_CaptureTheme"
-            android:windowSoftInputMode="stateAlwaysHidden"
- />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".AppActivities.TareasActivity"
             android:screenOrientation="portrait"

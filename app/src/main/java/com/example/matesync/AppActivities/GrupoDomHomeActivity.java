@@ -66,7 +66,7 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
         setupQRClickListener();
         setupRecyclerView();
     }
-
+    //método que inicializa los componentes de la vista
     private void initializeComponents() {
         sharedPreferences = new SharedPreferencesManager(this);
         codigoInvitacionGrupo = sharedPreferences.getICodInv();
@@ -82,7 +82,7 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
         tvCod.setEnabled(false);
         tvCod.setText(codigoInvitacionGrupo);
     }
-
+    //método que configura la toolbar
     private void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -97,7 +97,7 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
                 sharedPreferences
         );
     }
-
+    //método que configura el click listener del botón QR
     private void setupQRClickListener() {
         ibQR.setOnClickListener(v -> {
             if (codigoInvitacionGrupo != null && !codigoInvitacionGrupo.isEmpty()) {
@@ -107,7 +107,7 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
             }
         });
     }
-
+    //método que configura el recycler view
     private void setupRecyclerView() {
         recyclerViewMiembros.setLayoutManager(new LinearLayoutManager(this));
 
@@ -120,7 +120,7 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
         });
     }
 
-
+    //método que muestra el código QR
     private void mostrarCodigoQR() {
         try {
             Bitmap qrBitmap = QRManager.generarCodigoQR(codigoInvitacionGrupo);
@@ -142,7 +142,7 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
             Toast.makeText(this, "Error al generar código QR", Toast.LENGTH_SHORT).show();
         }
     }
-
+    //método que permite compartir el código de invitación
     private void compartirCodigoInvitacion() {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
@@ -154,17 +154,7 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
 
         startActivity(Intent.createChooser(shareIntent, "Compartir código de invitación"));
     }
-
-    private void copiarCodigoAlPortapapeles() {
-        android.content.ClipboardManager clipboard =
-                (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        android.content.ClipData clip =
-                android.content.ClipData.newPlainText("Código de Invitación", codigoInvitacionGrupo);
-        clipboard.setPrimaryClip(clip);
-
-        Toast.makeText(this, "Código copiado al portapapeles", Toast.LENGTH_SHORT).show();
-    }
-
+    //método que recupera los miembros del grupo
     private void cargarUsuarios() {
         ConexionBBDD conn = ConexionBBDD.getInstance();
         conn.recuperarMiembrosGrupo(sharedPreferences.getUserGroupID(), this, new MiembrosCallback() {
@@ -197,7 +187,7 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
         });
     }
 
-
+    //método que muestra las opciones de gestión de un usuario
     private void mostrarOpcionesRol(Usuario usuario) {
         if (usuario.getEmail().equals(sharedPreferences.getUserEmail())) {
             Toast.makeText(this, "No puedes gestionar tu propio rol", Toast.LENGTH_SHORT).show();
@@ -228,7 +218,7 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
         builder.setNegativeButton("Cancelar", null);
         builder.show();
     }
-
+    //método que cambia el rol de un usuario
     private void cambiarRolUsuario(Usuario usuario, boolean hacerAdmin) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         String grupoId = sharedPreferences.getUserGroupID();
@@ -255,7 +245,7 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
                     Toast.makeText(this, "Error al cambiar el rol", Toast.LENGTH_SHORT).show();
                 });
     }
-
+    //método que confirma la expulsión de un usuario
     private void confirmarExpulsarUsuario(Usuario usuario) {
         new AlertDialog.Builder(this)
                 .setTitle("Confirmar expulsión")
@@ -264,7 +254,7 @@ public class GrupoDomHomeActivity extends AppCompatActivity {
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
-
+    //método que expulsa un usuario del grupo
     private void expulsarUsuario(Usuario usuario) {
        ConexionBBDD conn = ConexionBBDD.getInstance();
        conn.borrarUsuarioDeGrupo(usuario.getGrupoID(), usuario.getUserID(), this, new AuthCallback() {

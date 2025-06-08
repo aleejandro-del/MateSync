@@ -110,12 +110,6 @@ public class LoginActivity extends AppCompatActivity {
                                         shared.setUserGroup(grupoID);
                                         shared.setIsAdmin(isAdmin);
                                         shared.setNombreGrupo(nombreGrupo);
-
-                                        Log.d("LoginFlow", "Datos completos obtenidos:");
-                                        Log.d("LoginFlow", "Nombre: " + nombreUser);
-                                        Log.d("LoginFlow", "GrupoID: " + grupoID);
-                                        Log.d("LoginFlow", "Admin: " + isAdmin);
-                                        Log.d("LoginFlow", "nombre de grupo: " + nombreGrupo);
                                         estaEnGrupo = !grupoID.isEmpty();
                                         Toast.makeText(LoginActivity.this, "Login exitoso", Toast.LENGTH_SHORT).show();
 

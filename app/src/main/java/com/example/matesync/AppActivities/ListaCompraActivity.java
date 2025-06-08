@@ -44,20 +44,17 @@ public class ListaCompraActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_listacompra);
-
-        configurarInsets();
-        inicializarComponentes();
-        configurarListeners();
-        cargarProductos();
-    }
-
-    private void configurarInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        inicializarComponentes();
+        configurarListeners();
+        cargarProductos();
     }
+
 
     private void inicializarComponentes() {
         sharedPreferences = new SharedPreferencesManager(this);
@@ -83,7 +80,7 @@ public class ListaCompraActivity extends AppCompatActivity {
     private void configurarListeners() {
         fab.setOnClickListener(v -> crearDialogoCreacionProducto());
     }
-
+    //método para crear el diálogo de creación de productos
     private void crearDialogoCreacionProducto() {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.layout_dialogo_crear_producto, null);
 
@@ -100,11 +97,19 @@ public class ListaCompraActivity extends AppCompatActivity {
                 .setMessage("Rellene los datos del producto")
                 .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
                 .setPositiveButton("Crear", (dialog, which) -> {
-                    String nombreProducto = etProductoName.getText().toString().trim();
-                    String descripcionProducto = etProductoDescription.getText().toString().trim();
-                    long cantidad = Long.parseLong(etProductoCantidad.getText().toString().trim());
+                    String nombreProducto = "";
+                    String descripcionProducto = "";
+                    long cantidad = 0;
+                    try {
+                        nombreProducto = etProductoName.getText().toString().trim();
+                        descripcionProducto= etProductoDescription.getText().toString().trim();
+                        cantidad = Long.parseLong(etProductoCantidad.getText().toString().trim());
+                    }catch (Exception e){
+                        Toast.makeText(this, "Necesitas introducir los datos obligatorios", Toast.LENGTH_SHORT).show();
+                    }
 
-                    if (!nombreProducto.isEmpty()) {
+
+                    if (!nombreProducto.isEmpty() && cantidad > 0) {
                         registrarProducto(nombreProducto, descripcionProducto, cantidad);
                     } else {
                         Toast.makeText(this, "El nombre es obligatorio", Toast.LENGTH_SHORT).show();
@@ -113,7 +118,7 @@ public class ListaCompraActivity extends AppCompatActivity {
                 .create()
                 .show();
     }
-
+    //método para registrar un producto en la base de datos
     private void registrarProducto(String nombre, String descripcion, long cantidad) {
         Log.d("PRODUCTO", "Nombre: " + nombre + ", Descripción: " + descripcion + ", grupoID: " + sharedPreferences.getUserGroupID());
 
@@ -149,6 +154,7 @@ public class ListaCompraActivity extends AppCompatActivity {
         );
     }
 
+    //método que recupera los productos del grupo mediante consulta a Firestore
     private void cargarProductos() {
         ConexionBBDD.getInstance().recuperarProductosGrupo(
                 sharedPreferences.getUserGroupID(),
@@ -178,39 +184,46 @@ public class ListaCompraActivity extends AppCompatActivity {
         );
     }
 
+    //método para configurar el recyclerview de los productos
     private void configurarRecyclerView(List<Producto> listaProductos) {
         RecyclerView recyclerView = findViewById(R.id.recyclerViewProductos);
 
-        // Si el adapter ya existe, solo actualizar los datos
+        //si el adapter ya existe, solo actualizo sus datos
         if (adapter == null) {
             adapter = new ProductoAdapter(listaProductos, this::manejarClickProducto);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             recyclerView.setAdapter(adapter);
-            configurarDecoraciones(recyclerView);
+
+            //configuro las decoraciones
+            recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+                @Override
+                public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                    outRect.set(5, 0, 0, 0);
+                }
+            });
         } else {
-            // Solo actualizar los datos existentes
+            //si el adapter ya existe, solo actualizar los datos existentes
             adapter.updateProductos(listaProductos); // Necesitarás añadir este método al ProductoAdapter
         }
     }
 
+    //método para manejar la pulsación larga sobre el checkbox de un producto
     private void manejarClickProducto(Producto producto) {
-        // Mostrar confirmación antes de eliminar
-        new AlertDialog.Builder(this)
-                .setTitle("Eliminar producto")
-                .setMessage("¿Estás seguro de que quieres eliminar este producto?")
-                .setPositiveButton("Eliminar", (dialog, which) -> {
+        //mostrar dialog de confirmación antes de eliminar
+        new AlertDialog.Builder(this).setTitle("Marcar como comprado").setMessage("¿Confirma que ha comprado \"" + producto.getNombre() + "\"?").setPositiveButton("Sí, comprado", (dialog, which) -> {
                     ConexionBBDD conn = ConexionBBDD.getInstance();
                     conn.borrarProducto(producto, new ProductoCallback() {
                         @Override
                         public void onSuccessRecoveringProductos(List<Producto> listaProductos) {
-                            // No utilizado en este contexto
+                            //no utilizado aquí
                         }
 
                         @Override
                         public void onSuccessRegisteringProducto() {
-                            // No utilizado aquí
+                            //no utilizado aquí
                         }
 
+                        //si hay éxito al borrar, se vuelven a cargar los productos
                         @Override
                         public void onSuccessRemovingProducto() {
                             Toast.makeText(ListaCompraActivity.this, "Producto borrado correctamente", Toast.LENGTH_SHORT).show();
@@ -226,15 +239,5 @@ public class ListaCompraActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
-    }
-
-    private void configurarDecoraciones(RecyclerView recyclerView) {
-        // Eliminar espacios adicionales - solo una vez
-        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
-            @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                outRect.set(5, 0, 0, 0);
-            }
-        });
     }
 }

@@ -49,16 +49,18 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
         holder.tvDesc.setText(producto.getDescripcion());
         holder.tvUnidadesProducto.setText(String.valueOf(producto.getCantidad()));
 
-        // Resetear el estado del checkbox para evitar problemas de reciclaje
-        holder.btGestionarProducto.setOnCheckedChangeListener(null); // Eliminar listener temporalmente
-        holder.btGestionarProducto.setChecked(false); // Desmarcar por defecto
+        // Resetear checkbox
+        holder.btGestionarProducto.setOnCheckedChangeListener(null);
+        holder.btGestionarProducto.setChecked(false);
+
+        // Configurar listener
         holder.btGestionarProducto.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked && listener != null) {
-                listener.onGestionarProductoClick(producto);
+                listener.onGestionarProductoClick(listaProductos.get(holder.getAdapterPosition()));
+                buttonView.setChecked(false); // Desmarcar inmediatamente
             }
         });
     }
-
     public void updateProductos(List<Producto> nuevosProductos) {
         this.listaProductos.clear();
         this.listaProductos.addAll(nuevosProductos);

@@ -15,20 +15,25 @@ import com.google.android.material.checkbox.MaterialCheckBox;
 import java.util.ArrayList;
 import java.util.List;
 
+// Clase MovEcoAdapter
 public class MovEcoAdapter extends RecyclerView.Adapter<MovEcoAdapter.MovEcoViewHolder> {
     private List<MovimientoEconomico> listaMovimientos;
     private OnMovEvClickListener listener;
 
+    // Interfaz para el listener del checkbox
     public interface OnMovEvClickListener {
         void onGestionarMovEco(MovimientoEconomico movimientoEconomico);
     }
 
+    // Constructor
     public MovEcoAdapter(List<MovimientoEconomico> listaMovimientos, OnMovEvClickListener listener) {
         this.listaMovimientos = listaMovimientos != null ? listaMovimientos : new ArrayList<>();
         this.listener = listener;
     }
 
+    // Métodos del adaptador
     @NonNull
+    // Método para crear el ViewHolder
     @Override
     public MovEcoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
@@ -36,6 +41,7 @@ public class MovEcoAdapter extends RecyclerView.Adapter<MovEcoAdapter.MovEcoView
         return new MovEcoViewHolder(view);
     }
 
+    // Método para actualizar la lista
     @Override
     public void onBindViewHolder(@NonNull MovEcoViewHolder holder, int position) {
         MovimientoEconomico movimientoEconomico = listaMovimientos.get(position);
@@ -67,14 +73,14 @@ public class MovEcoAdapter extends RecyclerView.Adapter<MovEcoAdapter.MovEcoView
         return listaMovimientos.size();
     }
 
-    // Método para actualizar la lista completa
+    // Método para actualizar la lista
     public void updateMovimientos(List<MovimientoEconomico> nuevaLista) {
         this.listaMovimientos.clear();
         this.listaMovimientos.addAll(nuevaLista);
         notifyDataSetChanged();
     }
 
-
+    // Clase ViewHolder
     public static class MovEcoViewHolder extends RecyclerView.ViewHolder {
         public TextView tvConcepto, tvValor, tvDetalles;
         public MaterialCheckBox btGestionarMovEco;

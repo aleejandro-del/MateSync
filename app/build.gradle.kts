@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.matesync"
-    compileSdk = 31
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.matesync"

@@ -22,7 +22,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.matesync.ConexionBBDD.ConexionBBDD;
+import com.example.matesync.BaseDatosController.ConexionBBDD;
 import com.example.matesync.Callbacks.AuthCallback;
 import com.example.matesync.Callbacks.CodInvitacionCallback;
 import com.example.matesync.Manager.QRManager;
@@ -36,12 +36,12 @@ import com.journeyapps.barcodescanner.ScanOptions;
 
 import java.util.ArrayList;
 
-public class AccederGrupoDomActivity extends AppCompatActivity {
-    private Button btCrearGrupo, btUnirseGrupo;
+public class GrupoDomActivity extends AppCompatActivity {
+    private Button btCrearGrupo, btUnirseGrupo, btEscanearQR; // AÑADIDO: botón QR
     private SharedPreferencesManager shared;
     private ConexionBBDD conn;
 
-    // Launcher para el escáner QR
+    // AÑADIDO: Launcher para el escáner QR
     private final ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(
             new ScanContract(),
             result -> {
@@ -69,7 +69,7 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
         initializeComponents();
         setupEventListeners();
     }
-    //método que inicializa los componentes
+
     private void initializeComponents() {
         btCrearGrupo = findViewById(R.id.btCrearGrupo);
         btUnirseGrupo = findViewById(R.id.btUnirseGrupo);
@@ -77,13 +77,13 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
         shared = new SharedPreferencesManager(this);
         conn = ConexionBBDD.getInstance();
     }
-    //método que vincula los listeners a los botones correspondientes
+
     private void setupEventListeners() {
         btCrearGrupo.setOnClickListener(v -> mostrarDialogoCrearGrupo());
-        btUnirseGrupo.setOnClickListener(v -> mostrarOpcionesUnirse());
+        btUnirseGrupo.setOnClickListener(v -> mostrarOpcionesUnirse()); // MODIFICADO: ahora muestra opciones
     }
 
-    //método para mostrar opciones de unirse
+    // AÑADIDO: Método para mostrar opciones de unirse
     private void mostrarOpcionesUnirse() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Unirse a Grupo");
@@ -96,7 +96,7 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
         builder.create().show();
     }
 
-    //método para iniciar el proceso de escanear un QR
+    // AÑADIDO: Método para iniciar escaneo QR
     private void iniciarEscaneoQR() {
         // Verificar permisos de cámara
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -113,15 +113,15 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
         options.setCameraId(0);
         options.setBeepEnabled(true);
         options.setBarcodeImageEnabled(true);
-        options.setOrientationLocked(true);
+        options.setOrientationLocked(false);
 
         barcodeLauncher.launch(options);
     }
 
-    //método para procesar código QR escaneado
+    // AÑADIDO: Método para procesar código QR escaneado
     private void procesarCodigoQREscaneado(String codigoEscaneado) {
         try {
-            //valido que el código sea de 8 caracteres (que es el formato que guardo en Firestore como codInvitacion)
+            // Validar que el código sea de 8 caracteres (formato actual)
             if (codigoEscaneado != null && codigoEscaneado.trim().length() == 8) {
                 verificarYUnirseAGrupo(codigoEscaneado.trim().toUpperCase());
             } else {
@@ -133,7 +133,7 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
             Toast.makeText(this, "Error al procesar el código QR", Toast.LENGTH_SHORT).show();
         }
     }
-    //método que muestra el diálogo para crear un grupo
+
     private void mostrarDialogoCrearGrupo() {
         EditText campoCrearGrupo = new EditText(this);
         campoCrearGrupo.setHint("Nombre del grupo");
@@ -154,7 +154,7 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
 
         builder.create().show();
     }
-    //método que valida el nombre del grupo introducido por el usuario
+
     private boolean validarNombreGrupo(String nombreGrupo) {
         if (nombreGrupo.isEmpty()) {
             Toast.makeText(this, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show();
@@ -238,20 +238,49 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
             @Override
             public void onFailure(Exception exception) {
                 Log.e("GrupoDom", "Error al crear grupo", exception);
-                Toast.makeText(AccederGrupoDomActivity.this,
+                Toast.makeText(GrupoDomActivity.this,
                         "Error al crear el grupo: " + exception.getMessage(),
                         Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    //método que muestra el código QR del grupo doméstico que se acaba de crear
+    private void actualizarUsuarioEnBBDD(String grupoID, String nombreGrupo, String codigoInvitacion) { // MODIFICADO: añadido parámetro
+        // Actualizar el usuario en la colección principal con el grupoID correcto
+        FirebaseFirestore.getInstance()
+                .collection("usuarios")
+                .document(shared.getUserUID())
+                .update("grupoID", grupoID, "admin", true)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("GrupoDom", "Usuario actualizado correctamente");
+
+                    // Actualizar SharedPreferences
+                    shared.setUserGroup(grupoID);
+                    shared.setNombreGrupo(nombreGrupo);
+                    shared.setIsAdmin(true);
+
+                    Toast.makeText(GrupoDomActivity.this,
+                            "Grupo '" + nombreGrupo + "' creado exitosamente",
+                            Toast.LENGTH_SHORT).show();
+
+                    // AÑADIDO: Mostrar código QR después de crear el grupo
+                    mostrarCodigoQRGrupo(codigoInvitacion, nombreGrupo);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("GrupoDom", "Error al actualizar usuario", e);
+                    Toast.makeText(GrupoDomActivity.this,
+                            "Error al finalizar la creación del grupo",
+                            Toast.LENGTH_LONG).show();
+                });
+    }
+
+    // AÑADIDO: Método para mostrar QR después de crear grupo
     private void mostrarCodigoQRGrupo(String codigoInvitacion, String nombreGrupo) {
         try {
-            //genero el QR con el código de invitación
+            // Generar QR con el código de invitación
             Bitmap qrBitmap = QRManager.generarCodigoQR(codigoInvitacion);
 
-            //creo el diálogo para mostrar el QR
+            // Crear diálogo para mostrar el QR
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             View dialogView = getLayoutInflater().inflate(R.layout.dialog_mostrar_qr, null);
 
@@ -275,7 +304,7 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
             navegarAMainActivity();
         }
     }
-    //método para msotrar el diálogo para unirse a un grupo
+
     private void mostrarDialogoUnirseGrupo() {
         EditText campoUnirseGrupo = new EditText(this);
         campoUnirseGrupo.setHint("Código de invitación (8 caracteres)");
@@ -296,7 +325,7 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
 
         builder.create().show();
     }
-    //método que valida el código de invitación introducido por el usuario
+
     private boolean validarCodigoInvitacion(String codigo) {
         if (codigo.isEmpty()) {
             Toast.makeText(this, "El código no puede estar vacío", Toast.LENGTH_SHORT).show();
@@ -310,18 +339,19 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
 
         return true;
     }
-    //método que verifica si el código de invitación es válido
+
     private void verificarYUnirseAGrupo(String codigoInv) {
         conn.verificarCodigoInvitacion(codigoInv, new CodInvitacionCallback() {
             @Override
             public void onCodigoValido(String codigoInvitacion, String grupoId, String nombreGrupo) {
                 Log.d("GrupoDom", "Código válido. Uniéndose al grupo: " + nombreGrupo);
                 unirseAGrupo(codigoInvitacion, grupoId, nombreGrupo);
+
             }
 
             @Override
             public void onCodigoNoValido() {
-                Toast.makeText(AccederGrupoDomActivity.this,
+                Toast.makeText(GrupoDomActivity.this,
                         "El código de invitación no es válido",
                         Toast.LENGTH_SHORT).show();
             }
@@ -329,13 +359,13 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
             @Override
             public void onError(Exception e) {
                 Log.e("GrupoDom", "Error al verificar código", e);
-                Toast.makeText(AccederGrupoDomActivity.this,
+                Toast.makeText(GrupoDomActivity.this,
                         "Error al verificar el código: " + e.getMessage(),
                         Toast.LENGTH_LONG).show();
             }
         });
     }
-    //método que une al usuario al grupo
+
     private void unirseAGrupo(String codigoInvitacion, String grupoId, String nombreGrupo) {
         Usuario usuario = new Usuario(
                 shared.getUserUID(),
@@ -345,48 +375,23 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
                 shared.getUserEmail()
         );
 
-        // agrego el usuario al grupo en la BBDD
         conn.addUserAGrupo(usuario, grupoId, this);
 
-        //ahora actualizo el documento del usuario en la BBDD
-        actualizarDocumentoUsuario(grupoId, nombreGrupo, codigoInvitacion);
+        // Actualizar SharedPreferences
+        shared.setUserGroup(grupoId);
+        shared.setNombreGrupo(nombreGrupo);
+        shared.setIsAdmin(false);
+        shared.setCodigoInvitacion(codigoInvitacion);
+        Toast.makeText(this,
+                "Te has unido exitosamente al grupo '" + nombreGrupo + "'",
+                Toast.LENGTH_SHORT).show();
+
+        // Dar tiempo para que se complete la operación en Firestore
+        new android.os.Handler().postDelayed(() -> {
+            navegarAMainActivity();
+        }, 2000);
     }
 
-    // método que actualiza el documento del usuario en la BBDD una vez de ha unido a un grupo
-    private void actualizarDocumentoUsuario(String grupoId, String nombreGrupo, String codigoInvitacion) {
-        FirebaseFirestore.getInstance()
-                .collection("usuarios")
-                .document(shared.getUserUID())
-                .update(
-                        "grupoID", grupoId,
-                        "admin", false
-                )
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("GrupoDom", "Documento de usuario actualizado correctamente en colección usuarios");
-
-                    //actualizo el shared preferences
-                    shared.setUserGroup(grupoId);
-                    shared.setNombreGrupo(nombreGrupo);
-                    shared.setIsAdmin(false);
-                    shared.setCodigoInvitacion(codigoInvitacion);
-
-                    Toast.makeText(AccederGrupoDomActivity.this,
-                            "Te has unido exitosamente al grupo '" + nombreGrupo + "'",
-                            Toast.LENGTH_SHORT).show();
-
-                    //doy tiempo para que se complete la operación en Firestore
-                    new android.os.Handler().postDelayed(() -> {
-                        navegarAMainActivity();
-                    }, 2000);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("GrupoDom", "Error al actualizar documento de usuario en colección usuarios", e);
-                    Toast.makeText(AccederGrupoDomActivity.this,
-                            "Error al completar la unión al grupo: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                });
-    }
-    //método para ir al MainActivity
     private void navegarAMainActivity() {
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -394,16 +399,17 @@ public class AccederGrupoDomActivity extends AppCompatActivity {
         finish();
     }
 
-    //método para generar un código de 8 caracteres únicos
+    // Genera un código de 8 caracteres únicos
     public static String generarCodigoInvitacion() {
         String uuid = FirebaseFirestore.getInstance().collection("gruposDomesticos").document().getId();
+
         return uuid.substring(0, 8).toUpperCase();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //limpio recursos si es necesario
+        // Limpiar recursos si es necesario
         if (conn != null) {
             conn.cleanupListeners();
         }

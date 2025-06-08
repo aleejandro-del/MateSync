@@ -49,7 +49,7 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         holder.tvDesc.setText(tarea.getDescripcion());
 
         // Mostrar icono de gestión solo si es admin
-        if (MainActivity.USUARIO != null && MainActivity.USUARIO.isAdmin()) {
+        if (MainActivity.USUARIO != null ) {
             holder.btGestionarTarea.setVisibility(View.VISIBLE);
         } else {
             holder.btGestionarTarea.setVisibility(View.GONE);
@@ -61,6 +61,7 @@ public class TareaAdapter extends RecyclerView.Adapter<TareaAdapter.TareaViewHol
         holder.btGestionarTarea.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked && listener != null) {
                 listener.onGestionarTareaClick(tarea);
+                buttonView.setChecked(false); // Desmarcar inmediatamente
             }
         });
     }

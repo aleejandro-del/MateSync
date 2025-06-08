@@ -44,46 +44,37 @@ public class TareasActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_tareas);
-
-        configurarInsets();
-        inicializarComponentes();
-        configurarListeners();
-        cargarTareas();
-    }
-
-    private void configurarInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        inicializarComponentes();
+        configurarListeners();
+        cargarTareas();
     }
 
+    //método que inicializa los componentes
     private void inicializarComponentes() {
         sharedPreferences = new SharedPreferencesManager(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        navManager = new MenuLateralManager(
-                this,
-                toolbar,
-                R.id.drawer_layout,
-                R.id.nav_view,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close,
-                sharedPreferences
-        );
+        navManager = new MenuLateralManager(this, toolbar, R.id.drawer_layout, R.id.nav_view, R.string.navigation_drawer_open, R.string.navigation_drawer_close, sharedPreferences);
 
         fab = findViewById(R.id.btAddTarea);
         tvTareas = findViewById(R.id.tvTareas);
         tvTareas.setText("Tareas del hogar de " + sharedPreferences.getNombreGrupo());
     }
 
+    //configuro el listener del boton flotante
     private void configurarListeners() {
         fab.setOnClickListener(v -> crearDialogoCreacionTarea());
     }
 
+    //método que recoge las tareas existentes en el grupo doméstico consultando Firestore
     private void cargarTareas() {
         ConexionBBDD.getInstance().recuperarTareasGrupo(sharedPreferences.getUserGroupID(),
                 new TareaCallback() {
@@ -110,6 +101,7 @@ public class TareasActivity extends AppCompatActivity {
         );
     }
 
+    //método que inicializa el recyclerview correspondiente a las tareas
     private void configurarRecyclerView(List<Tarea> listaTareas) {
         RecyclerView recyclerView = findViewById(R.id.recyclerViewTareas);
 
@@ -118,13 +110,19 @@ public class TareasActivity extends AppCompatActivity {
             adapter = new TareaAdapter(listaTareas, this::manejarClickTarea);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             recyclerView.setAdapter(adapter);
-            configurarDecoraciones(recyclerView);
+            recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+                @Override
+                public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                    outRect.set(5, 0, 0, 0);
+                }
+            });
         } else {
             // Solo actualizar los datos existentes
             adapter.updateTareas(listaTareas); // Necesitarás añadir este método al TareaAdapter
         }
     }
 
+    //método que maneja el click en el checkbox de una tarea
     private void manejarClickTarea(Tarea tarea) {
         // Mostrar confirmación antes de eliminar
         new AlertDialog.Builder(this)
@@ -163,17 +161,7 @@ public class TareasActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void configurarDecoraciones(RecyclerView recyclerView) {
-        // Eliminar espacios adicionales - solo una vez
-        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
-            @Override
-            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                outRect.set(5, 0, 0, 0);
-            }
-        });
-    }
-
-    // Método para crear el diálogo de creación de tarea
+    //método que crea el diálogo de creación de tarea
     private void crearDialogoCreacionTarea() {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.layout_dialogo_crear_tarea, null);
 
@@ -202,6 +190,7 @@ public class TareasActivity extends AppCompatActivity {
                 .show();
     }
 
+    //método que registra la tarea en la base de datos
     private void registrarTarea(String nombre, String descripcion) {
         Log.d("TASK", "Nombre: " + nombre + ", Descripción: " + descripcion);
 
